@@ -1,0 +1,311 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title> FOREX SECRET WORLD</title>
+     <link rel="stylesheet" href="style.css">
+     <link href="https://fonts.gloogleapis.com/css2?
+     family=poppins:wght@300;400;500;600;700&display=swap"
+     rel="stylesheet">
+</head>
+<body>
+  <div class="header">
+    <div class="container">
+     <div class="navbar">
+       <div class="logo">
+          <img src="logo2.png" width="155px">
+        </div>
+        <nav>
+          <ul id="MenuItems">
+             <li><a href="index.html">Home</a></li>
+          </ul>
+        </nav>
+        <img src="menue.png" class="menue-icon" 
+          onclick="menutoggle()">
+       </div>
+    </div>
+  </div>
+  <hr>
+<div class="account-page">
+   <div class="container">
+      <div class="row">
+           <div class="col-2">
+              <img src="forexpicture.jpg" width="100%">
+           </div>
+           <div class="col-2">
+              <div class="form-container">
+                 <div class="form-btn">
+                    <span onclick="register()">Login</span> 
+                    <span onclick="login()">Register</span>                   
+                    <hr id="Indicator">
+                 </div>
+                 <form id="LoginForm">
+                   <input type="text" placeholder="username">
+                   <input type="email" id="email" placeholder="email">
+                   <input type="password" id="password" placeholder="password">
+                   <button type="submit" id="regButton">Register</button>
+                 </form>
+                 <form id="RegForm">
+                   <input type="text" id="email" placeholder="email">
+                   <input type="password" id="password" placeholder="password">
+                   <button type="submit" id="loginButton">Login</button>
+                   <a href="">Forgot password</a>
+                 </form>
+              </div>
+           </div>
+      </div>
+   </div>
+</div>
+
+<script>
+   var MenuItems = document.getElementById("MenuItems");
+
+      MenuItems.style.maxHeight = "0px";
+ 
+      function menutoggle(){
+                    if(MenuItems.style.maxHeight == "0px")
+                       {MenuItems.style.maxHeight = "200px";} 
+                    else
+                        {MenuItems.style.maxHeight = "0px"; }       
+
+      }
+
+</script>
+<script>
+     var LoginForm = document.getElementById("LoginForm");
+     var RegForm = document.getElementById("RegForm");
+     var Indicator = document.getElementById("Indicator");
+         
+         function login(){
+                             RegForm.style.transform = "translateX(300px)";
+                             LoginForm.style.transform = "translateX(300px)";
+                             Indicator.style.transform = "translateX(100px)";
+                            }
+         function register(){
+                             RegForm.style.transform = "translateX(0px)";
+                             LoginForm.style.transform = "translateX(0px)";
+                             Indicator.style.transform = "translateX(0px)";
+                            }
+         
+</script>
+
+  <div class="footer">
+      <div class="container">
+         <div class="row">
+            <div class="footer-col-1">
+               <img src="logo2.png"> 
+            </div>
+            <div class="footer-col-2">
+               <p>Our purpose is to make sure that some traders, those who are lucky                       become successful.
+               </p> 
+            </div>
+         </div>
+      </div>
+      <hr>
+      <p class="copyright">Copyright 1988-2023 : Forex secret world</p>
+  </div>
+  </div>
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyCgqIJgv8QazWTVGmdD3EXPMKZTygiH3iE",
+    authDomain: "forexsecretworld-a76bd.firebaseapp.com",
+    databaseURL: "https://forexsecretworld-a76bd-default-rtdb.firebaseio.com",
+    projectId: "forexsecretworld-a76bd",
+    storageBucket: "forexsecretworld-a76bd.appspot.com",
+    messagingSenderId: "394039451549",
+    appId: "1:394039451549:web:a65cb68a79fda6a5225974",
+    measurementId: "G-TTTEMXNZRW"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth();
+  const database = firebase.database();
+
+  console.log(app);
+  
+document.getElementById("regButton").addEventListener('click', function() {
+      var email = document.getElementById("email").value;
+      var password = document.getElementById("password").value;
+      createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+      // Signed in 
+      const user = userCredential.user;
+      console.log(user);
+      alert("Registration successfully");
+      // ...
+      })
+      .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorMessage);
+      alert("error");
+      });
+    });
+
+  document.getElementById("loginButton").addEventListener('click', function() {
+      var email = document.getElementById("email").value;
+      var password = document.getElementById("password").value;
+      signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+      // logged in 
+      const user = userCredential.user;
+      console.log(user);
+      alert(user.email+"Login successfully");
+      // ...
+      })
+      .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log(errorMessage);
+      alert("errorMessage");
+      });
+    });
+
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
