@@ -648,7 +648,7 @@ p{
           width: 100%; 
          }
 
-.col-paypal form{position: relative;
+.col-paypal {position: relative;
                  display: inline-block;
                 }
 
