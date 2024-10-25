@@ -6,7 +6,7 @@
 body{font-family: 'poppins', sans-serif;}
 
 .navbar{
-        display: flex;
+        display: inline-block;
         align-items: center;
         padding: 5px;
        }
