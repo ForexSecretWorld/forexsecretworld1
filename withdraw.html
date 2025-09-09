@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forex Secret World - Sign Up</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Original Header -->
+  <div class="header">
+    <div class="container">
+      <div class="navbar">
+        <div class="logo">
+          <img src="logo2.png" width="155px">
+        </div>
+        <nav>
+          <ul id="MenuItems">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="dashboard.html">Client dashboard</a></li>
+          </ul>
+        </nav>
+        <img src="menue.png" class="menue-icon" onclick="menutoggle()">
+      </div>
+    </div>
+  </div>
+
+<!-- Withdrawal Methods Section -->
+<div class="withdrawal-section">
+  <div class="container">
+    <h2 class="section-title">Withdrawal Methods</h2>
+    <div class="withdrawal-cards">
+
+      <!-- Paypal -->
+      <div class="card" onclick="window.location.href='withdraw_paypal.html'" style="cursor:pointer;">
+       <img src="paypal.png" alt="PayPal Logo" class="card-logo">
+       <p><strong>Processing Time:</strong> Instant – 24 hours</p>
+       <p><strong>Fees:</strong> 1%</p>
+       <p><strong>Minimum Withdrawal:</strong> $100</p>
+      </div>
+
+      <!-- SwiffyEFT -->
+      <div class="card" onclick="window.location.href='withdraw_swiffyeft.html'" style="cursor:pointer;">
+        <img src="swiffyeft.png" alt="SwiffyEft Logo" class="card-logo">
+        <p><strong>Processing Time:</strong> Instant – 24 hours</p>
+        <p><strong>Fees:</strong> No fees</p>
+        <p><strong>Minimum Withdrawal:</strong> $250</p>
+      </div>
+
+      <!-- OZOW -->
+      <div class="card" onclick="window.location.href='withdraw_ozow.html'" style="cursor:pointer;">
+        <img src="ozow.png" alt="OZOW Logo" class="card-logo">
+        <p><strong>Processing Time:</strong> Instant</p>
+        <p><strong>Fees:</strong> No fees</p>
+        <p><strong>Minimum Withdrawal:</strong> $100</p>
+      </div>
+
+      <!-- DIGITAL CURRENCIES -->
+      <div class="card" onclick="window.location.href='withdraw_crypto.html'" style="cursor:pointer;">
+        <img src="crypto.png" alt="Digital Currencies Logo" class="card-logo">
+        <h3>Digital Currencies</h3>
+        <p><strong>Processing Time:</strong> 1 – 3 hours</p>
+        <p><strong>Fees:</strong> Network fees may apply</p>
+        <p><strong>Minimum Withdrawal:</strong> $150</p>
+      </div>
+
+      <!-- WIRE BANK TRANSFER -->
+      <div class="card" onclick="window.location.href='withdraw_bank_wire.html'" style="cursor:pointer;">
+        <img src="wire_bank.png" alt="Wire Transfer Logo" class="card-logo">
+        <h3>Wire Bank Transfer</h3>
+        <p><strong>Processing Time:</strong> 3 – 5 business days</p>
+        <p><strong>Fees:</strong> no fees</p>
+        <p><strong>Minimum Withdrawal:</strong> $200</p>
+      </div>
+
+      <!-- NETELLER -->
+      <div class="card" onclick="window.location.href='withdraw_neteller.html'" style="cursor:pointer;">
+        <img src="neteller.png" alt="Neteller Logo" class="card-logo">
+        <p><strong>Processing Time:</strong> Within 24 hours</p>
+        <p><strong>Fees:</strong> No fees</p>
+        <p><strong>Minimum Withdrawal:</strong> $100</p>
+      </div>
+
+      <!-- SKRILL -->
+      <div class="card" onclick="window.location.href='withdraw_skrill.html'" style="cursor:pointer;">
+        <img src="skrill.png" alt="Skrill Logo" class="card-logo">
+        <p><strong>Processing Time:</strong> Within 24 hours</p>
+        <p><strong>Fees:</strong> No fees</p>
+        <p><strong>Minimum Withdrawal:</strong> $100</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+  <!-- Original Footer -->
+  <div class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="footer-col-1">
+          <img src="logo2.png"> 
+        </div>
+        <div class="footer-col-2">
+          <p>Our purpose is to make sure that some traders, those who are lucky become successful.</p> 
+        </div>
+      </div>
+    </div>
+    <hr>
+    <p class="copyright">Copyright 1988-2025 : Forex secret world</p>
+  </div>
+
+  <!-- JS -->
+<script>
+  var MenuItems = document.getElementById("MenuItems");
+  var menuBtn = document.querySelector(".menue-icon");
+
+  // Initially collapse menu
+  MenuItems.style.maxHeight = "0px";
+
+  // Toggle menu on button click
+  function menutoggle() {
+    if (MenuItems.style.maxHeight === "0px") {
+      MenuItems.style.maxHeight = MenuItems.scrollHeight + "px"; // dynamic height
+    } else {
+      MenuItems.style.maxHeight = "0px";
+    }
+  }
+
+  // Close menu if user clicks outside
+  document.addEventListener("click", function(event) {
+    if (!MenuItems.contains(event.target) && !menuBtn.contains(event.target)) {
+      MenuItems.style.maxHeight = "0px";
+    }
+  });
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

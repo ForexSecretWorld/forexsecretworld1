@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forex Secret World - Request Funds</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Original Header -->
+  <div class="header">
+    <div class="container">
+      <div class="navbar">
+        <div class="logo">
+          <img src="logo2.png" width="155px">
+        </div>
+        <nav>
+          <ul id="MenuItems">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="dashboard.html">Client dashboard</a></li>
+          </ul>
+        </nav>
+        <img src="menue.png" class="menue-icon" onclick="menutoggle()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Request funds Form -->
+  <div class="signup-container">
+    <h2>Request Trading Funds</h2>
+    <form id="fundRequestForm">
+      <input type="text" id="fullName" placeholder="Full Name" required>
+      <input type="email" id="email" placeholder="Email Address" required>
+      <input type="tel" id="phone" placeholder="Phone Number" required>
+      <select required>
+        <option value="">Select Country</option>
+        <option value="usa">USA</option>
+        <option value="uk">UK</option>
+        <option value="canada">Canada</option>
+        <option value="other">Other</option>
+      </select>
+      <input type="address" placeholder="Address line 1" required>
+      <input type="suburb" placeholder="Suburb" required>
+      <input type="city" placeholder="City/Town" required>
+      <input type="code" placeholder="Postal code" required>
+      <input type="province" placeholder="District/Province" required>
+
+      <!-- Trading Knowledge Questions -->
+      <h3>Trading Knowledge Questions</h3>
+      <label>1. How long have you been trading?</label>
+      <select required>
+        <option value="">Select an option</option>
+        <option value="less1">Less than 1 year</option>
+        <option value="1to3">1 - 3 years</option>
+        <option value="3to5">3 - 5 years</option>
+        <option value="5plus">More than 5 years</option>
+      </select>
+      <label>2. What does "leverage" in trading mean?</label>
+      <select required>
+        <option value="">Select an answer</option>
+        <option value="amplifies">It amplifies your potential profit and loss</option>
+        <option value="fixed">It fixes your trading fee</option>
+        <option value="insurance">It protects your capital completely</option>
+      </select>
+      <label>3. What is a “stop-loss” order?</label>
+      <select required>
+        <option value="">Select an answer</option>
+        <option value="limit-loss">An order to limit potential losses</option>
+        <option value="profit-take">An order to take profit immediately</option>
+        <option value="market-open">An order to open a new position</option>
+      </select>
+      <label>4. Which of these is considered higher risk?</label>
+      <select required>
+        <option value="">Select an answer</option>
+        <option value="forex">Trading on high leverage forex pairs</option>
+        <option value="savings">Investing in a bank savings account</option>
+        <option value="bonds">Government bonds</option>
+      </select>
+
+      <!-- Terms & Conditions Checkbox -->
+      <div class="terms-checkbox">
+        <input type="checkbox" id="terms" required>
+        <label for="terms">
+          I agree to the <a href="terms.html" target="_blank">Terms & Conditions</a>
+        </label>
+      </div>
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <!-- Original Footer -->
+  <div class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="footer-col-1">
+          <img src="logo2.png">
+        </div>
+        <div class="footer-col-2">
+          <p>Our purpose is to make sure that some traders, those who are lucky become successful.</p>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <p class="copyright">Copyright 1988-2025 : Forex secret world</p>
+  </div>
+
+  <!-- JS -->
+  <script>
+    var MenuItems = document.getElementById("MenuItems");
+    var menuBtn = document.querySelector(".menue-icon");
+
+    // Initially collapse menu
+    MenuItems.style.maxHeight = "0px";
+
+    // Toggle menu on button click
+    function menutoggle() {
+      if (MenuItems.style.maxHeight === "0px") {
+        MenuItems.style.maxHeight = MenuItems.scrollHeight + "px"; // dynamic height
+      } else {
+        MenuItems.style.maxHeight = "0px";
+      }
+    }
+
+    // Close menu if user clicks outside
+    document.addEventListener("click", function(event) {
+      if (!MenuItems.contains(event.target) && !menuBtn.contains(event.target)) {
+        MenuItems.style.maxHeight = "0px";
+      }
+    });
+  </script>
+
+<!-- Send user data to database -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+// 🔹 Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
+  authDomain: "fluxitrade.firebaseapp.com",
+  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
+  projectId: "fluxitrade",
+  storageBucket: "fluxitrade.firebasestorage.app",
+  messagingSenderId: "594575269059",
+  appId: "1:594575269059:web:c1faccf7a13689c9111676",
+  measurementId: "G-NTQSJ4LBC7"
+};
+
+// 🔹 Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// 🔹 Form reference
+const form = document.getElementById("fundRequestForm");
+
+// 🔹 Submit handler
+form.addEventListener("submit", (e) => {
+  e.preventDefault(); // prevent page reload
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      alert("You must be logged in to submit a request!");
+      return;
+    }
+
+    // Collect form data
+    const formData = {
+      uid: user.uid, // ✅ store UID as a child
+      fullName: document.getElementById("fullName").value,
+      email: document.getElementById("email").value,
+      submittedAt: new Date().toISOString(),
+      status: "Pending"
+    };
+
+    try {
+      // ✅ Save under usersRequestingFunds/{uid} with UID also as child
+      await set(ref(db, `usersRequestingFunds/${user.uid}`), formData);
+
+      alert("Your request has been submitted successfully!");
+      form.reset();
+      window.location.href = "status.html";
+      
+    } catch (err) {
+      console.error("Submission error:", err);
+      alert("Failed to submit request. Please try again.");
+    }
+  });
+});
+</script>
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

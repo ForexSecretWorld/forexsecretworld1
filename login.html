@@ -1,185 +1,576 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title> FOREX SECRET WORLD</title>
-     <link rel="stylesheet" href="style.css">
-     <link href="https://fonts.gloogleapis.com/css2?
-     family=poppins:wght@300;400;500;600;700&display=swap"
-     rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOREX SECRET WORLD</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="header">
-    <div class="container">
-     <div class="navbar">
-       <div class="logo">
-          <img src="logo2.png" width="155px">
+<!-- Header/Navbar -->
+<div class="header">
+  <div class="container">
+    <div class="navbar">
+      <div class="logo">
+        <img src="logo2.png" width="155px">
+      </div>
+      <nav>
+        <ul id="MenuItems">
+          <li><a href="index.html">Home</a></li>
+        </ul>
+      </nav>
+      <img src="menue.png" class="menue-icon" onclick="menutoggle()">
+    </div>
+  </div>
+</div>
+<hr>
+<!-- Account Page -->
+<div class="account-page">
+  <div class="container">
+    <div class="row">
+      <div class="col-2">
+        <img src="forexpicture.jpg" width="100%">
+      </div>
+      <div class="col-2">
+        <div class="form-container">
+          <!-- Tabs -->
+          <div class="form-btn">
+            <span onclick="login()">Login</span>
+            <span onclick="register()">Register</span>
+          </div>
+          <div id="Indicator"></div>
+<!-- Login Form -->
+<form id="LoginForm">
+  <input type="email" id="loginEmail" placeholder="Email" required>
+  
+  <div class="password-container">
+    <input type="password" id="loginPassword" placeholder="Password" required>
+    <span id="toggleLoginPassword" class="toggle-eye">👁️</span>
+  </div>
+  
+  <button type="submit" class="btn">Login</button>
+  <a href="reset_password.html" id="forgotPassword">Forgot password?</a>
+</form>
+
+<!-- Register Form -->
+  <form id="RegForm">
+  <input type="text" id="fullName" placeholder="Full names" required>
+  <!-- Country dropdown with full list -->
+  <select id="country" required>
+  <option value="" disabled selected>Select your country</option>
+  <option value="US" data-code="+1">United States</option>
+  <option value="AF" data-code="+93">Afghanistan</option>
+  <option value="AL" data-code="+355">Albania</option>
+  <option value="DZ" data-code="+213">Algeria</option>
+  <option value="AS" data-code="+1-684">American Samoa</option>
+  <option value="AD" data-code="+376">Andorra</option>
+  <option value="AO" data-code="+244">Angola</option>
+  <option value="AR" data-code="+54">Argentina</option>
+  <option value="AM" data-code="+374">Armenia</option>
+  <option value="AU" data-code="+61">Australia</option>
+  <option value="AT" data-code="+43">Austria</option>
+  <option value="AZ" data-code="+994">Azerbaijan</option>
+  <option value="BS" data-code="+1-242">Bahamas</option>
+  <option value="BH" data-code="+973">Bahrain</option>
+  <option value="BD" data-code="+880">Bangladesh</option>
+  <option value="BB" data-code="+1-246">Barbados</option>
+  <option value="BE" data-code="+32">Belgium</option>
+  <option value="BZ" data-code="+501">Belize</option>
+  <option value="BJ" data-code="+229">Benin</option>
+  <option value="BT" data-code="+975">Bhutan</option>
+  <option value="BO" data-code="+591">Bolivia</option>
+  <option value="BA" data-code="+387">Bosnia and Herzegovina</option>
+  <option value="BW" data-code="+267">Botswana</option>
+  <option value="BR" data-code="+55">Brazil</option>
+  <option value="BN" data-code="+673">Brunei</option>
+  <option value="BG" data-code="+359">Bulgaria</option>
+  <option value="BF" data-code="+226">Burkina Faso</option>
+  <option value="BI" data-code="+257">Burundi</option>
+  <option value="KH" data-code="+855">Cambodia</option>
+  <option value="CM" data-code="+237">Cameroon</option>
+  <option value="CA" data-code="+1">Canada</option>
+  <option value="CV" data-code="+238">Cape Verde</option>
+  <option value="CF" data-code="+236">Central African Republic</option>
+  <option value="TD" data-code="+235">Chad</option>
+  <option value="CL" data-code="+56">Chile</option>
+  <option value="CN" data-code="+86">China</option>
+  <option value="CO" data-code="+57">Colombia</option>
+  <option value="KM" data-code="+269">Comoros</option>
+  <option value="CG" data-code="+242">Congo</option>
+  <option value="CR" data-code="+506">Costa Rica</option>
+  <option value="HR" data-code="+385">Croatia</option>
+  <option value="CU" data-code="+53">Cuba</option>
+  <option value="CY" data-code="+357">Cyprus</option>
+  <option value="CZ" data-code="+420">Czech Republic</option>
+  <option value="DK" data-code="+45">Denmark</option>
+  <option value="DJ" data-code="+253">Djibouti</option>
+  <option value="DO" data-code="+1-809">Dominican Republic</option>
+  <option value="EC" data-code="+593">Ecuador</option>
+  <option value="EG" data-code="+20">Egypt</option>
+  <option value="SV" data-code="+503">El Salvador</option>
+  <option value="EE" data-code="+372">Estonia</option>
+  <option value="ET" data-code="+251">Ethiopia</option>
+  <option value="FJ" data-code="+679">Fiji</option>
+  <option value="FI" data-code="+358">Finland</option>
+  <option value="FR" data-code="+33">France</option>
+  <option value="GA" data-code="+241">Gabon</option>
+  <option value="GM" data-code="+220">Gambia</option>
+  <option value="GE" data-code="+995">Georgia</option>
+  <option value="DE" data-code="+49">Germany</option>
+  <option value="GH" data-code="+233">Ghana</option>
+  <option value="GR" data-code="+30">Greece</option>
+  <option value="GT" data-code="+502">Guatemala</option>
+  <option value="GN" data-code="+224">Guinea</option>
+  <option value="GY" data-code="+592">Guyana</option>
+  <option value="HT" data-code="+509">Haiti</option>
+  <option value="HN" data-code="+504">Honduras</option>
+  <option value="HK" data-code="+852">Hong Kong</option>
+  <option value="HU" data-code="+36">Hungary</option>
+  <option value="IS" data-code="+354">Iceland</option>
+  <option value="IN" data-code="+91">India</option>
+  <option value="ID" data-code="+62">Indonesia</option>
+  <option value="IR" data-code="+98">Iran</option>
+  <option value="IQ" data-code="+964">Iraq</option>
+  <option value="IE" data-code="+353">Ireland</option>
+  <option value="IL" data-code="+972">Israel</option>
+  <option value="IT" data-code="+39">Italy</option>
+  <option value="JM" data-code="+1-876">Jamaica</option>
+  <option value="JP" data-code="+81">Japan</option>
+  <option value="JO" data-code="+962">Jordan</option>
+  <option value="KZ" data-code="+7">Kazakhstan</option>
+  <option value="KE" data-code="+254">Kenya</option>
+  <option value="KR" data-code="+82">South Korea</option>
+  <option value="KW" data-code="+965">Kuwait</option>
+  <option value="KG" data-code="+996">Kyrgyzstan</option>
+  <option value="LA" data-code="+856">Laos</option>
+  <option value="LV" data-code="+371">Latvia</option>
+  <option value="LB" data-code="+961">Lebanon</option>
+  <option value="LS" data-code="+266">Lesotho</option>
+  <option value="LR" data-code="+231">Liberia</option>
+  <option value="LY" data-code="+218">Libya</option>
+  <option value="LT" data-code="+370">Lithuania</option>
+  <option value="LU" data-code="+352">Luxembourg</option>
+  <option value="MG" data-code="+261">Madagascar</option>
+  <option value="MW" data-code="+265">Malawi</option>
+  <option value="MY" data-code="+60">Malaysia</option>
+  <option value="MV" data-code="+960">Maldives</option>
+  <option value="ML" data-code="+223">Mali</option>
+  <option value="MT" data-code="+356">Malta</option>
+  <option value="MX" data-code="+52">Mexico</option>
+  <option value="MD" data-code="+373">Moldova</option>
+  <option value="MN" data-code="+976">Mongolia</option>
+  <option value="MA" data-code="+212">Morocco</option>
+  <option value="MZ" data-code="+258">Mozambique</option>
+  <option value="MM" data-code="+95">Myanmar</option>
+  <option value="NA" data-code="+264">Namibia</option>
+  <option value="NP" data-code="+977">Nepal</option>
+  <option value="NL" data-code="+31">Netherlands</option>
+  <option value="NZ" data-code="+64">New Zealand</option>
+  <option value="NI" data-code="+505">Nicaragua</option>
+  <option value="NG" data-code="+234">Nigeria</option>
+  <option value="NO" data-code="+47">Norway</option>
+  <option value="OM" data-code="+968">Oman</option>
+  <option value="PK" data-code="+92">Pakistan</option>
+  <option value="PA" data-code="+507">Panama</option>
+  <option value="PG" data-code="+675">Papua New Guinea</option>
+  <option value="PY" data-code="+595">Paraguay</option>
+  <option value="PE" data-code="+51">Peru</option>
+  <option value="PH" data-code="+63">Philippines</option>
+  <option value="PL" data-code="+48">Poland</option>
+  <option value="PT" data-code="+351">Portugal</option>
+  <option value="QA" data-code="+974">Qatar</option>
+  <option value="RO" data-code="+40">Romania</option>
+  <option value="RU" data-code="+7">Russia</option>
+  <option value="RW" data-code="+250">Rwanda</option>
+  <option value="SA" data-code="+966">Saudi Arabia</option>
+  <option value="SN" data-code="+221">Senegal</option>
+  <option value="RS" data-code="+381">Serbia</option>
+  <option value="SG" data-code="+65">Singapore</option>
+  <option value="SK" data-code="+421">Slovakia</option>
+  <option value="SI" data-code="+386">Slovenia</option>
+  <option value="SZ" data-code="+268">Swaziland</option>
+  <option value="ZA" data-code="+27">South Africa</option>
+  <option value="ES" data-code="+34">Spain</option>
+  <option value="LK" data-code="+94">Sri Lanka</option>
+  <option value="SE" data-code="+46">Sweden</option>
+  <option value="CH" data-code="+41">Switzerland</option>
+  <option value="TH" data-code="+66">Thailand</option>
+  <option value="TR" data-code="+90">Turkey</option>
+  <option value="UG" data-code="+256">Uganda</option>
+  <option value="UA" data-code="+380">Ukraine</option>
+  <option value="AE" data-code="+971">United Arab Emirates</option>
+  <option value="GB" data-code="+44">United Kingdom</option>
+  <option value="UY" data-code="+598">Uruguay</option>
+  <option value="UZ" data-code="+998">Uzbekistan</option>
+  <option value="VE" data-code="+58">Venezuela</option>
+  <option value="VN" data-code="+84">Vietnam</option>
+  <option value="YE" data-code="+967">Yemen</option>
+  <option value="ZM" data-code="+260">Zambia</option>
+  <option value="ZW" data-code="+263">Zimbabwe</option>
+</select>
+
+  <input type="tel" id="phone" placeholder="Phone Number" required>
+  <input type="email" id="registerEmail" placeholder="Email" required>
+  <div class="password-container">
+     <input type="password" id="registerPassword" placeholder="Password" required>
+     <span id="toggleRegisterPassword" class="toggle-eye">👁️</span>
+  </div>
+  <button type="submit" class="btn">Register</button>
+</form>
+
         </div>
-        <nav>
-          <ul id="MenuItems">
-             <li><a href="index.html">Home</a></li>
-          </ul>
-        </nav>
-        <img src="menue.png" class="menue-icon" 
-          onclick="menutoggle()">
-       </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="container">
+    <div class="row">
+      <div class="footer-col-1">
+        <img src="logo2.png">
+      </div>
+      <div class="footer-col-2">
+        <p>Our purpose is to make sure that some traders, those who are lucky, become successful.</p>
+      </div>
     </div>
   </div>
   <hr>
-<div class="account-page">
-   <div class="container">
-      <div class="row">
-           <div class="col-2">
-              <img src="forexpicture.jpg" width="100%">
-           </div>
-           <div class="col-2">
-              <div class="form-container">
-                 <div class="form-btn">
-                    <span onclick="register()">Login</span> 
-                    <span onclick="login()">Register</span>                   
-                    <hr id="Indicator">
-                 </div>
-                 <form id="LoginForm">
-                   <input type="text" placeholder="username">
-                   <input type="email" id="email" placeholder="email">
-                   <input type="password" id="password" placeholder="password">
-                   <button type="submit" id="regButton">Register</button>
-                 </form>
-                 <form id="RegForm">
-                   <input type="text" id="email" placeholder="email">
-                   <input type="password" id="password" placeholder="password">
-                   <button type="submit" id="loginButton">Login</button>
-                   <a href="">Forgot password</a>
-                 </form>
-              </div>
-           </div>
-      </div>
-   </div>
+  <p class="copyright">Copyright 1988-2025 : Forex secret world</p>
 </div>
+<!-- Scripts -->
 
+<!-- START MENU TOGGLE, LOGIN TOGGLE, AND REGISTER TOGGLE FUN -----------------------------------------------------------------------------------------------------------------------> 
 <script>
-   var MenuItems = document.getElementById("MenuItems");
+  var MenuItems = document.getElementById("MenuItems");
+  var menuBtn = document.querySelector(".menue-icon");
 
+  // Initially collapse menu
+  MenuItems.style.maxHeight = "0px";
+
+  // Toggle menu on button click
+  function menutoggle() {
+    if (MenuItems.style.maxHeight === "0px") {
+      MenuItems.style.maxHeight = MenuItems.scrollHeight + "px"; // dynamic height
+    } else {
       MenuItems.style.maxHeight = "0px";
- 
-      function menutoggle(){
-                    if(MenuItems.style.maxHeight == "0px")
-                       {MenuItems.style.maxHeight = "200px";} 
-                    else
-                        {MenuItems.style.maxHeight = "0px"; }       
+    }
+  }
 
-      }
+  // Close menu if user clicks outside
+  document.addEventListener("click", function(event) {
+    if (!MenuItems.contains(event.target) && !menuBtn.contains(event.target)) {
+      MenuItems.style.maxHeight = "0px";
+    }
+  });
+  // Login/Register toggle
+  function login() {
+    document.getElementById("LoginForm").style.transform = "translateX(0)";
+    document.getElementById("RegForm").style.transform = "translateX(100%)";
+    document.getElementById("Indicator").style.transform = "translateX(0%)";
+  }
+  function register() {
+    document.getElementById("LoginForm").style.transform = "translateX(-100%)";
+    document.getElementById("RegForm").style.transform = "translateX(0)";
+    document.getElementById("Indicator").style.transform = "translateX(100%)";
+  }
+</script> 
+<!-- END MENU TOGGLE, LOGIN TOGGLE, AND REGISTER TOGGLE FUN ----------------------------------------------------------------------------------------------------------------------->
 
-</script>
+<!-- START COUNTRY CODE FUN ----------------------------------------------------------------------------------------------------------------------->
 <script>
-     var LoginForm = document.getElementById("LoginForm");
-     var RegForm = document.getElementById("RegForm");
-     var Indicator = document.getElementById("Indicator");
-         
-         function login(){
-                             RegForm.style.transform = "translateX(300px)";
-                             LoginForm.style.transform = "translateX(300px)";
-                             Indicator.style.transform = "translateX(100px)";
-                            }
-         function register(){
-                             RegForm.style.transform = "translateX(0px)";
-                             LoginForm.style.transform = "translateX(0px)";
-                             Indicator.style.transform = "translateX(0px)";
-                            }
-         
+document.addEventListener("DOMContentLoaded", function () {
+  const countrySelect = document.getElementById('country');
+  const phoneInput = document.getElementById('phone');
+
+  let countryCode = "";
+
+  function setCountryCode() {
+    const selectedOption = countrySelect.selectedOptions[0];
+    if (!selectedOption || !selectedOption.dataset.code) {
+      phoneInput.value = ""; // clear phone input if placeholder is selected
+      countryCode = "";
+      return;
+    }
+
+    const newCode = selectedOption.dataset.code;
+
+    // Remove old code if it exists
+    if (countryCode && phoneInput.value.startsWith(countryCode)) {
+      phoneInput.value = phoneInput.value.slice(countryCode.length);
+    }
+
+    countryCode = newCode;
+
+    // Only prepend if not already there
+    if (!phoneInput.value.startsWith(countryCode)) {
+      phoneInput.value = countryCode + phoneInput.value;
+    }
+
+    // Move cursor to end
+    phoneInput.setSelectionRange(phoneInput.value.length, phoneInput.value.length);
+  }
+
+  // Change code on country change
+  countrySelect.addEventListener('change', setCountryCode);
+
+  // Prevent deleting the prefix
+  phoneInput.addEventListener('keydown', function(e) {
+    if (phoneInput.selectionStart <= countryCode.length &&
+        (e.key === "Backspace" || e.key === "Delete")) {
+      e.preventDefault();
+    }
+  });
+
+  // Keep cursor after prefix
+  phoneInput.addEventListener('click', function() {
+    if (phoneInput.selectionStart < countryCode.length) {
+      phoneInput.setSelectionRange(countryCode.length, countryCode.length);
+    }
+  });
+
+  // Start empty, no default country code
+  phoneInput.value = "";
+});
 </script>
+<!-- END COUNTRY CODE FUN ----------------------------------------------------------------------------------------------------------------------->
 
-  <div class="footer">
-      <div class="container">
-         <div class="row">
-            <div class="footer-col-1">
-               <img src="logo2.png"> 
-            </div>
-            <div class="footer-col-2">
-               <p>Our purpose is to make sure that some traders, those who are lucky                       become successful.
-               </p> 
-            </div>
-         </div>
-      </div>
-      <hr>
-      <p class="copyright">Copyright 1988-2023 : Forex secret world</p>
-  </div>
-  </div>
+<!-- START PASSWORD VISIBILITY FUN ----------------------------------------------------------------------------------------------------------------------->
+<script>
+  function setupPasswordToggle(inputId, toggleId) {
+    const passwordInput = document.getElementById(inputId);
+    const togglePassword = document.getElementById(toggleId);
 
+    togglePassword.addEventListener("click", () => {
+      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      passwordInput.setAttribute("type", type);
+      togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+    });
+  }
+
+  // Apply to both password fields
+  setupPasswordToggle("loginPassword", "toggleLoginPassword");
+  setupPasswordToggle("registerPassword", "toggleRegisterPassword");
+</script>
+<!-- END PASSWORD VISIBILITY FUN ----------------------------------------------------------------------------------------------------------------------->
+
+<!-- START REGISTER FUN ----------------------------------------------------------------------------------------------------------------------->
 <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+const firebaseConfig = {
+  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
+  authDomain: "fluxitrade.firebaseapp.com",
+  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
+  projectId: "fluxitrade",
+  storageBucket: "fluxitrade.firebasestorage.app",
+  messagingSenderId: "594575269059",
+  appId: "1:594575269059:web:c1faccf7a13689c9111676",
+  measurementId: "G-NTQSJ4LBC7"
+};
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyCgqIJgv8QazWTVGmdD3EXPMKZTygiH3iE",
-    authDomain: "forexsecretworld-a76bd.firebaseapp.com",
-    databaseURL: "https://forexsecretworld-a76bd-default-rtdb.firebaseio.com",
-    projectId: "forexsecretworld-a76bd",
-    storageBucket: "forexsecretworld-a76bd.appspot.com",
-    messagingSenderId: "394039451549",
-    appId: "1:394039451549:web:a65cb68a79fda6a5225974",
-    measurementId: "G-TTTEMXNZRW"
-  };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const auth = getAuth();
-  const database = firebase.database();
+// Elements
+const registerForm = document.getElementById("RegForm");
+const countrySelect = document.getElementById("country");
+const phoneInput = document.getElementById("phone");
 
-  console.log(app);
-  
-document.getElementById("regButton").addEventListener('click', function() {
-      var email = document.getElementById("email").value;
-      var password = document.getElementById("password").value;
-      createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-      // Signed in 
-      const user = userCredential.user;
-      console.log(user);
-      alert("Registration successfully");
-      // ...
-      })
-      .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.log(errorMessage);
-      alert("error");
+// Country code logic
+let countryCode = countrySelect.selectedOptions[0].dataset.code;
+phoneInput.value = countryCode;
+
+countrySelect.addEventListener("change", () => {
+  countryCode = countrySelect.selectedOptions[0].dataset.code;
+  phoneInput.value = countryCode;
+});
+
+phoneInput.addEventListener("keydown", (e) => {
+  if (phoneInput.selectionStart <= countryCode.length &&
+      (e.key === "Backspace" || e.key === "Delete")) e.preventDefault();
+});
+
+phoneInput.addEventListener("click", () => {
+  if (phoneInput.selectionStart < countryCode.length) {
+    phoneInput.setSelectionRange(countryCode.length, countryCode.length);
+  }
+});
+
+// Signup handler
+registerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const fullName = document.getElementById("fullName").value;
+  const email = document.getElementById("registerEmail").value;
+  const password = document.getElementById("registerPassword").value;
+  const phone = phoneInput.value.trim();
+  const country = countrySelect.options[countrySelect.selectedIndex].text;
+
+  try {
+    // ✅ Check if phone exists in phoneNumbers node
+    const dbRef = ref(db);
+    const snapshot = await get(child(dbRef, "phoneNumbers"));
+    let phoneExists = false;
+
+    if (snapshot.exists()) {
+      snapshot.forEach((childSnap) => {
+        if (childSnap.val().number === phone) {
+          phoneExists = true;
+        }
       });
+    }
+
+    if (!phoneExists) {
+      showMessage("Registration failed. Please try again.", false);
+      return; // 🚫 Stop registration
+    }
+
+    // ✅ Phone exists → Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Save extra user info in Realtime Database
+    await set(ref(db, "userInfo/" + user.uid), {
+      fullName: fullName,
+      email: email,
+      phone: phone,
+      country: country,
+      mainBalance: "0.00",
+      uid2: ""
+
     });
 
-  document.getElementById("loginButton").addEventListener('click', function() {
-      var email = document.getElementById("email").value;
-      var password = document.getElementById("password").value;
-      signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-      // logged in 
-      const user = userCredential.user;
-      console.log(user);
-      alert(user.email+"Login successfully");
-      // ...
-      })
-      .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.log(errorMessage);
-      alert("errorMessage");
-      });
-    });
+    showMessage(`Signup successful 🎉 Welcome, ${fullName}`, true);
+    registerForm.reset();
+    phoneInput.value = countryCode;
 
+    // Redirect to dashboard after short delay
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 1000);
+
+  } catch (error) {
+    let message = "Registration failed. Please try again.";
+
+    if (error.code === "auth/email-already-in-use") {
+      message = "This email is already registered.";
+    } else if (error.code === "auth/invalid-email") {
+      message = "Please enter a valid email address.";
+    } else if (error.code === "auth/weak-password") {
+      message = "Password must be at least 6 characters.";
+    }
+
+    console.error("Auth error:", error);
+    showMessage(message, false);
+  }
+});
 </script>
+<!-- END REGISTER FUN ----------------------------------------------------------------------------------------------------------------------->
+
+<!-- START LOGIN FUN ----------------------------------------------------------------------------------------------------------------------->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
+  authDomain: "fluxitrade.firebaseapp.com",
+  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
+  projectId: "fluxitrade",
+  storageBucket: "fluxitrade.firebasestorage.app",
+  messagingSenderId: "594575269059",
+  appId: "1:594575269059:web:c1faccf7a13689c9111676",
+  measurementId: "G-NTQSJ4LBC7"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// Elements
+const loginForm = document.getElementById("LoginForm");
+
+// Login handler
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  try {
+    // Sign in with email + password
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Try fetching user info from Realtime Database
+    try {
+      const snapshot = await get(child(ref(db), "userInfo/" + user.uid));
+      if (snapshot.exists()) {
+        const userInfo = snapshot.val();
+        console.log("User Info:", userInfo);
+        showMessage(`Welcome back 🎉 ${userInfo.fullName}`, true);
+      } else {
+        showMessage("Welcome back! (No profile info found in database)", true);
+      }
+    } catch (dbError) {
+      console.error("Database read failed:", dbError);
+      showMessage("Login successful, but could not fetch profile.", true);
+    }
+
+    loginForm.reset();
+
+    // Redirect to dashboard.html after successful login
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 1000); // 1-second delay to show the welcome message
+
+  } catch (error) {
+    let message = "Login failed. Please try again.";
+
+    if (error.code === "auth/user-not-found") {
+      message = "No account found with this email.";
+    } else if (error.code === "auth/wrong-password") {
+      message = "Incorrect password.";
+    } else if (error.code === "auth/invalid-email") {
+      message = "Invalid email address.";
+    }
+
+    console.error("Login error:", error);
+    showMessage(message, false);
+  }
+});
+</script>
+<!-- END LOGIN FUN ----------------------------------------------------------------------------------------------------------------------->
+
+<!-- START MESSAGE FUN ----------------------------------------------------------------------------------------------------------------------->
+<div id="messageBox" style="display:none; position:fixed; top:20px; right:20px; 
+                            background:#f44336; color:white; padding:15px; border-radius:5px;">
+</div>
+<script>
+function showMessage(message, success = false) {
+  const box = document.getElementById("messageBox");
+  box.style.background = success ? "#4CAF50" : "#f44336"; // green for success, red for error
+  box.textContent = message;
+  box.style.display = "block";
+  setTimeout(() => {
+    box.style.display = "none";
+  }, 4000); // hide after 3 seconds
+}
+</script>
+<!-- END MESSAGE FUN ----------------------------------------------------------------------------------------------------------------------->
+
+
+
 
 </body>
 </html>
-
 
 
 

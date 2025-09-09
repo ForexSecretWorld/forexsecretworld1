@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forex Secret World - Sign Up</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Original Header -->
+  <div class="header">
+    <div class="container">
+      <div class="navbar">
+        <div class="logo">
+          <img src="logo2.png" width="155px">
+        </div>
+        <nav>
+          <ul id="MenuItems">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="withdraw.html">Back</a></li>
+          </ul>
+        </nav>
+        <img src="menue.png" class="menue-icon" onclick="menutoggle()">
+      </div>
+    </div>
+  </div>
+
+  <!-- withdraw Form -->
+  <div class="signup-container">
+    <h2>Swiffy EFT Withdrawal</h2>
+<form id="withdrawForm" class="withdraw-form">
+  
+  <!-- Amount -->
+  <label for="amount">Amount</label>
+  <input type="number" id="amount" name="amount" placeholder="Enter Amount" required min="100" max="10000" step="0.01">
+  
+  <!-- Bank Name -->
+  <label for="bank">Bank Name</label>
+  <select id="bank" name="bank" required>
+    <option value="">-- Select Bank --</option>
+    <option value="ABSA">ABSA</option>
+    <option value="ACCESS">ACCESS</option>
+    <option value="AFRIBANK">AFRIBANK</option>
+    <option value="BIDVEST">BIDVEST</option>
+    <option value="CAPITEC">CAPITEC</option>
+    <option value="DISCOVERY">DISCOVERY</option>
+    <option value="FNB">FNB</option>
+    <option value="HSBC">HSBC</option>
+    <option value="INVESTEC">INVESTEC</option>
+    <option value="MERCANTILE">MERCANTILE</option>
+    <option value="NEDBANK">NEDBANK</option>
+    <option value="OLD MUTUAL">OLD MUTUAL</option>
+    <option value="RMB PRIVATE BANK">RMB PRIVATE BANK</option>
+    <option value="SASFIN">SASFIN</option>
+    <option value="STANDARD BANK">STANDARD BANK</option>
+    <option value="STDCHARTERED">STDCHARTERED</option>
+    <option value="TYME">TYME</option>
+    <option value="WINDHOEK">WINDHOEK</option>
+  </select>
+  
+  <!-- Account Holder Name -->
+  <label for="holder">Account Holder Name</label>
+  <input type="text" id="holder" name="holder" placeholder="Enter Account Holder Name" required>
+  
+  <!-- Account Number -->
+  <label for="account_number">Bank Account Number</label>
+  <input type="text" id="account_number" name="account_number" placeholder="Enter Account Number" required>
+  
+  <!-- Account Type -->
+  <label for="account_type">Account Type</label>
+  <select id="account_type" name="account_type" required>
+    <option value="">-- Select Account Type --</option>
+    <option value="savings">Savings</option>
+    <option value="checking">Checking</option>
+    <option value="current">Current</option>
+  </select>
+  
+  <!-- Withdraw Button -->
+  <button type="submit">Withdraw</button>
+</form>
+
+
+  </div>
+
+  <!-- Original Footer -->
+  <div class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="footer-col-1">
+          <img src="logo2.png"> 
+        </div>
+        <div class="footer-col-2">
+          <p>Our purpose is to make sure that some traders, those who are lucky become successful.</p> 
+        </div>
+      </div>
+    </div>
+    <hr>
+    <p class="copyright">Copyright 1988-2025 : Forex secret world</p>
+  </div>
+
+  <!-- JS -->
+<script>
+  var MenuItems = document.getElementById("MenuItems");
+  var menuBtn = document.querySelector(".menue-icon");
+
+  // Initially collapse menu
+  MenuItems.style.maxHeight = "0px";
+
+  // Toggle menu on button click
+  function menutoggle() {
+    if (MenuItems.style.maxHeight === "0px") {
+      MenuItems.style.maxHeight = MenuItems.scrollHeight + "px"; // dynamic height
+    } else {
+      MenuItems.style.maxHeight = "0px";
+    }
+  }
+
+  // Close menu if user clicks outside
+  document.addEventListener("click", function(event) {
+    if (!MenuItems.contains(event.target) && !menuBtn.contains(event.target)) {
+      MenuItems.style.maxHeight = "0px";
+    }
+  });
+</script>
+
+
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, get, update, push, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
+  authDomain: "fluxitrade.firebaseapp.com",
+  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
+  projectId: "fluxitrade",
+  storageBucket: "fluxitrade.firebasestorage.app",
+  messagingSenderId: "594575269059",
+  appId: "1:594575269059:web:c1faccf7a13689c9111676",
+  measurementId: "G-NTQSJ4LBC7"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// Helper: fetch node safely
+async function fetchNode(path) {
+  try {
+    const snap = await get(ref(db, path));
+    return snap.exists() ? snap.val() : null;
+  } catch (err) {
+    console.error("Error fetching node", path, err);
+    return null;
+  }
+}
+
+// Handle withdrawal
+onAuthStateChanged(auth, (user) => {
+  if (!user) return;
+
+  const form = document.getElementById("withdrawForm");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const amount = parseFloat(form.querySelector('#amount').value);
+    const bank = form.querySelector('#bank').value;
+    const holder = form.querySelector('#holder').value.trim();
+    const accountNumber = form.querySelector('#account_number').value.trim();
+    const accountType = form.querySelector('#account_type').value;
+
+    if (isNaN(amount) || amount < 250) {
+      alert("⚠️ Please enter a valid withdrawal amount (minimum $250).");
+      return;
+    }
+    if (!bank || !holder || !accountNumber || !accountType) {
+      alert("⚠️ Please fill in all fields.");
+      return;
+    }
+
+    try {
+      const userData = await fetchNode(`userInfo/${user.uid}`);
+      if (!userData) {
+        alert("⚠️ User data not found.");
+        return;
+      }
+
+      const mainBalance = parseFloat(userData.mainBalance ?? 0);
+      if (mainBalance < amount) {
+        alert("❌ Insufficient funds.");
+        return;
+      }
+
+      // Subtract amount from mainBalance
+      const newBalance = mainBalance - amount;
+      await update(ref(db, `userInfo/${user.uid}`), {
+        mainBalance: newBalance.toFixed(2)
+      });
+
+      // Record withdrawal request
+      const withdrawalRef = push(ref(db, "usersRequestingFunds"));
+      await set(withdrawalRef, {
+        uid: user.uid,
+        amount,
+        bank,
+        holder,
+        accountNumber,
+        accountType,
+        timestamp: Date.now(),
+        status: "pending"
+      });
+
+      alert(`✅ Withdrawal request of $${amount.toFixed(2)} submitted successfully! It will be processed within 1 business day.`);
+      form.reset();
+    } catch (err) {
+      console.error("❌ Withdrawal error:", err);
+      alert("❌ Error processing withdrawal. Check console for details.");
+    }
+  });
+});
+</script>
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

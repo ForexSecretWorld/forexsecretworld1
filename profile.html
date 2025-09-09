@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forex Secret World - User Profile</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="container">
+      <div class="navbar">
+        <div class="logo">
+          <img src="logo2.png" width="155px">
+        </div>
+        <nav>
+          <ul id="MenuItems">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="dashboard.html">Back</a></li>
+          </ul>
+        </nav>
+        <img src="menue.png" class="menue-icon" onclick="menutoggle()">
+      </div>
+    </div>
+  </div>
+
+  <!-- User Profile Section -->
+<section class="user-profile">
+  <h2>User Profile</h2>
+  <div class="profile-card" id="profileCard">
+    <!-- JS will inject user data here -->
+  </div>
+
+  <h3>Upload Identity Card</h3>
+  <input type="file" id="idCard" accept=".jpg,.jpeg,.png,.pdf">
+  <button id="uploadIdCardBtn">Upload ID Card</button>
+  <div id="idCardStatus"></div>
+
+  <h3>Upload Bank Statement</h3>
+  <input type="file" id="bankStatement" accept=".jpg,.jpeg,.png,.pdf">
+  <button id="uploadBankBtn">Upload Bank Statement</button>
+  <div id="bankStatus"></div>
+
+  <h3>Verification Status</h3>
+  <div id="verificationStatus"></div>
+</section>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="footer-col-1">
+          <img src="logo2.png"> 
+        </div>
+        <div class="footer-col-2">
+          <p>Our purpose is to make sure that some traders, those who are lucky become successful.</p> 
+        </div>
+      </div>
+    </div>
+    <hr>
+    <p class="copyright">Copyright 1988-2025 : Forex secret world</p>
+  </div>
+
+  <!-- JS Menu Toggle -->
+  <script>
+    var MenuItems = document.getElementById("MenuItems");
+    var menuBtn = document.querySelector(".menue-icon");
+
+    // Initially collapse menu
+    MenuItems.style.maxHeight = "0px";
+
+    // Toggle menu on button click
+    function menutoggle() {
+      if (MenuItems.style.maxHeight === "0px") {
+        MenuItems.style.maxHeight = MenuItems.scrollHeight + "px";
+      } else {
+        MenuItems.style.maxHeight = "0px";
+      }
+    }
+
+    // Close menu if user clicks outside
+    document.addEventListener("click", function(event) {
+      if (!MenuItems.contains(event.target) && !menuBtn.contains(event.target)) {
+        MenuItems.style.maxHeight = "0px";
+      }
+    });
+  </script>
+
+<!-- JS Profile Render -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
+  authDomain: "fluxitrade.firebaseapp.com",
+  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
+  projectId: "fluxitrade",
+  storageBucket: "fluxitrade.firebasestorage.app",
+  messagingSenderId: "594575269059",
+  appId: "1:594575269059:web:c1faccf7a13689c9111676",
+  measurementId: "G-NTQSJ4LBC7"
+};
+
+// Init Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// Listen for logged in user
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    // Get fresh data from database
+    const snapshot = await get(child(ref(db), "userInfo/" + user.uid));
+    if (snapshot.exists()) {
+      const userInfo = snapshot.val();
+
+      // Populate profile page
+      document.getElementById("profileCard").innerHTML = `
+        <div class="profile-item"><span class="label">Name:</span> <span class="value">${userInfo.fullName || "N/A"}</span></div>
+        <div class="profile-item"><span class="label">Country:</span> <span class="value">${userInfo.country || "N/A"}</span></div>
+        <div class="profile-item"><span class="label">Phone:</span> <span class="value">${userInfo.phone || "N/A"}</span></div>
+        <div class="profile-item"><span class="label">Email:</span> <span class="value">${userInfo.email || "N/A"}</span></div>
+        <div class="profile-item"><span class="label">Main Balance:</span> <span class="value">$${userInfo.mainBalance || "0.00"}</span></div>
+      `;
+    } else {
+      document.getElementById("profileCard").innerHTML = "<p>No profile data found.</p>";
+    }
+  } else {
+    // No user signed in → redirect back to login
+    window.location.href = "login.html";
+  }
+});
+
+// Optional logout function
+document.getElementById("logoutBtn")?.addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.href = "login.html";
+});
+</script>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref as dbRef, update, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
+  authDomain: "fluxitrade.firebaseapp.com",
+  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
+  projectId: "fluxitrade",
+  storageBucket: "fluxitrade.firebasestorage.app",
+  messagingSenderId: "594575269059",
+  appId: "1:594575269059:web:c1faccf7a13689c9111676",
+  measurementId: "G-NTQSJ4LBC7"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const storage = getStorage(app);
+
+// Helper to format status for UI
+function formatStatus(status) {
+  if (status === "Approved") return "✅ Approved";
+  if (status === "Rejected") return "❌ Rejected";
+  if (status === "Pending Verification") return "⏳ Pending Verification";
+  return status || "Not uploaded";
+}
+
+// DOM elements
+const idCardInput = document.getElementById("idCard");
+const idCardBtn = document.getElementById("uploadIdCardBtn");
+const idCardStatus = document.getElementById("idCardStatus");
+
+const bankInput = document.getElementById("bankStatement");
+const bankBtn = document.getElementById("uploadBankBtn");
+const bankStatus = document.getElementById("bankStatus");
+
+const verificationStatus = document.getElementById("verificationStatus");
+
+// Load user profile and status
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    alert("❌ Please log in to view your profile and upload documents.");
+    return;
+  }
+
+  const userRef = dbRef(db, `userInfo/${user.uid}`);
+  const verificationRef = dbRef(db, `documentVerifications/${user.uid}`);
+
+  // Function to update verification display
+  async function updateVerificationStatus() {
+    try {
+      const snapshot = await get(verificationRef);
+      const data = snapshot.val() || {};
+      verificationStatus.innerHTML = `
+ID Card: ${formatStatus(data.idCardStatus)}<br>
+Bank Statement: ${formatStatus(data.bankStatementStatus)}
+      `;
+    } catch (err) {
+      console.error(err);
+      verificationStatus.textContent = "❌ Error fetching verification status.";
+    }
+  }
+
+  // Initial status display
+  updateVerificationStatus();
+
+  // Upload Identity Card
+  idCardBtn.addEventListener("click", async () => {
+    const file = idCardInput.files[0];
+    if (!file) {
+      alert("❌ Please select an ID card file.");
+      return;
+    }
+
+    idCardStatus.textContent = "Uploading Identity Card...";
+    try {
+      const fileRef = storageRef(storage, `userDocuments/${user.uid}/idCard_${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(snapshot.ref);
+
+      // Fetch user's name from userInfo
+      const userSnap = await get(userRef);
+      const userData = userSnap.val() || {};
+      const fullName = userData.fullName || "Unknown User";
+
+      // Update verification node
+      await update(verificationRef, {
+        name: fullName,
+        idCardURL: url,
+        idCardStatus: "Pending Verification"
+      });
+
+      idCardStatus.textContent = "✅ Identity Card uploaded successfully!";
+      updateVerificationStatus();
+      idCardInput.value = ""; // reset input
+    } catch (err) {
+      console.error(err);
+      idCardStatus.textContent = `❌ Error uploading ID Card: ${err.message}`;
+    }
+  });
+
+  // Upload Bank Statement
+  bankBtn.addEventListener("click", async () => {
+    const file = bankInput.files[0];
+    if (!file) {
+      alert("❌ Please select a Bank Statement file.");
+      return;
+    }
+
+    bankStatus.textContent = "Uploading Bank Statement...";
+    try {
+      const fileRef = storageRef(storage, `userDocuments/${user.uid}/bankStatement_${Date.now()}_${file.name}`);
+      const snapshot = await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(snapshot.ref);
+
+      // Fetch user's name from userInfo
+      const userSnap = await get(userRef);
+      const userData = userSnap.val() || {};
+      const fullName = userData.fullName || "Unknown User";
+
+      // Update verification node
+      await update(verificationRef, {
+        name: fullName,
+        bankStatementURL: url,
+        bankStatementStatus: "Pending Verification"
+      });
+
+      bankStatus.textContent = "✅ Bank Statement uploaded successfully!";
+      updateVerificationStatus();
+      bankInput.value = ""; // reset input
+    } catch (err) {
+      console.error(err);
+      bankStatus.textContent = `❌ Error uploading Bank Statement: ${err.message}`;
+    }
+  });
+});
+</script>
+
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

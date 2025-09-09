@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forex Secret World - Sign Up</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Original Header -->
+  <div class="header">
+    <div class="container">
+      <div class="navbar">
+        <div class="logo">
+          <img src="logo2.png" width="155px">
+        </div>
+        <nav>
+          <ul id="MenuItems">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="dashboard.html">Back</a></li>
+          </ul>
+        </nav>
+        <img src="menue.png" class="menue-icon" onclick="menutoggle()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Transfer Form -->
+  <div class="signup-container">
+    <h2>Transfer to another Trader</h2>
+<form id="addBalanceForm">
+  <input type="email" placeholder="User email" required>
+  <input type="number" placeholder="Amount" required min="0.01" step="0.01">
+  <button type="submit">Transfer</button>
+</form>
+  </div>
+
+  <!-- Original Footer -->
+  <div class="footer">
+    <div class="container">
+      <div class="row">
+        <div class="footer-col-1">
+          <img src="logo2.png"> 
+        </div>
+        <div class="footer-col-2">
+          <p>Our purpose is to make sure that some traders, those who are lucky become successful.</p> 
+        </div>
+      </div>
+    </div>
+    <hr>
+    <p class="copyright">Copyright 1988-2025 : Forex secret world</p>
+  </div>
+
+  <!-- JS -->
+<script>
+  var MenuItems = document.getElementById("MenuItems");
+  var menuBtn = document.querySelector(".menue-icon");
+
+  // Initially collapse menu
+  MenuItems.style.maxHeight = "0px";
+
+  // Toggle menu on button click
+  function menutoggle() {
+    if (MenuItems.style.maxHeight === "0px") {
+      MenuItems.style.maxHeight = MenuItems.scrollHeight + "px"; // dynamic height
+    } else {
+      MenuItems.style.maxHeight = "0px";
+    }
+  }
+
+  // Close menu if user clicks outside
+  document.addEventListener("click", function(event) {
+    if (!MenuItems.contains(event.target) && !menuBtn.contains(event.target)) {
+      MenuItems.style.maxHeight = "0px";
+    }
+  });
+</script>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
+  authDomain: "fluxitrade.firebaseapp.com",
+  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
+  projectId: "fluxitrade",
+  storageBucket: "fluxitrade.firebasestorage.app",
+  messagingSenderId: "594575269059",
+  appId: "1:594575269059:web:c1faccf7a13689c9111676",
+  measurementId: "G-NTQSJ4LBC7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth, (user) => {
+  if (!user) {
+    alert("❌ Please log in first.");
+    return;
+  }
+
+  const form = document.getElementById("addBalanceForm");
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = form.querySelector('input[type="email"]').value.trim();
+    const amount = parseFloat(form.querySelector('input[type="number"]').value);
+
+    if (!email || isNaN(amount) || amount <= 0) {
+      alert("❌ Please enter a valid email and amount.");
+      return;
+    }
+
+    try {
+      // 1️⃣ Add amount to target user by email
+      const snapshot = await get(ref(db, "userInfo"));
+      if (!snapshot.exists()) {
+        alert("❌ No users found in the database.");
+        return;
+      }
+
+      const users = snapshot.val();
+      const targetUid = Object.keys(users).find(
+        uid => users[uid].email.trim().toLowerCase() === email.trim().toLowerCase()
+      );
+
+      if (!targetUid) {
+        alert("❌ User with this email not found.");
+        return;
+      }
+
+      const targetData = users[targetUid];
+      let targetBalance = parseFloat(targetData.mainBalance ?? 0);
+      if (isNaN(targetBalance)) targetBalance = 0;
+
+      const newTargetBalance = targetBalance + amount;
+
+      await update(ref(db, `userInfo/${targetUid}`), { mainBalance: newTargetBalance.toFixed(2) });
+
+      // 2️⃣ Subtract amount from logged-in user
+      const currentUserSnap = await get(ref(db, `userInfo/${user.uid}`));
+      if (!currentUserSnap.exists()) {
+        alert("❌ Your user data not found.");
+        return;
+      }
+
+      let currentBalance = parseFloat(currentUserSnap.val().mainBalance ?? 0);
+      if (isNaN(currentBalance)) currentBalance = 0;
+
+      if (currentBalance < amount) {
+        alert("❌ Insufficient funds to complete the transfer.");
+        // Optionally: roll back the previous addition if desired
+        await update(ref(db, `userInfo/${targetUid}`), { mainBalance: targetBalance.toFixed(2) });
+        return;
+      }
+
+      const newCurrentBalance = currentBalance - amount;
+      await update(ref(db, `userInfo/${user.uid}`), { mainBalance: newCurrentBalance.toFixed(2) });
+
+      alert(`✅ $${amount.toFixed(2)} transferred successfully!
+Your new balance: $${newCurrentBalance.toFixed(2)}`);
+      form.reset();
+
+    } catch (err) {
+      alert(`❌ Error transfering $${amount.toFixed(2)} please try again later.`);
+    }
+  });
+});
+</script>
+
+
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
