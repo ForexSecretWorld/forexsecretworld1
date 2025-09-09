@@ -1142,6 +1142,14 @@ table.account-table th {
     margin-top: 5px;
 }
 
+.row { text-align: center; }
+  .col-2 { flex-basis: 100%; }
+  .form-container {
+    width: 90%;
+    padding: 15px;
+    min-height: 480px;
+}
+
   .small-container-heading {
     display: block;       /* take full width */
     text-align: center;   /* keep heading centered */
@@ -1153,6 +1161,7 @@ table.account-table th {
   }
 
 }
+
 
 
 
