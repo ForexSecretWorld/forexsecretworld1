@@ -1,76 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-     <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <title> FOREX SECRET WORLD</title>
-     <link rel="stylesheet" href="style.css">
-     <link href="https://fonts.gloogleapis.com/css2?
-     family=poppins:wght@300;400;500;600;700&display=swap"
-     rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FOREX SECRET WORLD</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Poppins', sans-serif; }
+
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 10px;
+      background: radial-gradient(#fff,#ffd6d6);
+    }
+    nav { flex: 1; text-align: right; }
+    nav ul { display: inline-block; list-style-type: none; margin-right: 20px; }
+    nav ul li { display: inline-block; margin-right: 20px; }
+    a { text-decoration: none; color: #555; }
+    p { color: #555; }
+
+    .login-link {
+      background: #ff523b;
+      color: #fff;
+      font-size: 14px;    /* Text size */
+      padding: 6px 20px;
+      border-radius: 20px;
+      transition: background 0.3s;
+    }
+    .login-link:hover { background: #563434; }
+
+    .container { max-width: 2000px; }
+    .row { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-around; }
+    .col-2 { padding: 10px; flex-basis: 50%; min-width: 300px; }
+    .col-2 img { max-width: 100%; padding: 50px 10px; }
+    .col-2 h1 { margin: 25px 0; }
+    .col-2 p { font-size: 18px; line-height: 20px; margin: 25px 0; }
+
+    .btn-1 {
+      display: inline-block;
+      background: #ff523b;
+      color: #fff;
+      padding: 8px 30px;
+      margin: 10px;
+      border-radius: 30px;
+      transition: background 0.5s;
+    }
+    .btn-1:hover { background: #563434; }
+
+    .menue-icon {
+      width: 34px;
+      margin-left: 15px;
+      display: none;
+      cursor: pointer;
+    }
+
+    /* Desktop (default): menu visible inline */
+    #MenuItems {
+      max-height: none;
+    }
+
+/* Mobile menu toggle */
+@media only screen and (max-width: 800px) {
+  nav ul {
+    position: absolute;
+    top: 70px;
+    left: 0;
+    background: #333;
+    width: 100%;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  nav ul li {
+    display: block;
+    margin: 3px 20px 3px 20px; /* top right bottom left */
+  }
+  nav ul li a {
+    color: #fff;
+    display: block;
+    padding: 10px 0; /* optional vertical padding */
+    border-bottom: 1px solid #555; /* line below all items */
+  }
+  .menue-icon { display: block; }
+  #MenuItems { 
+    max-height: 0; /* collapsed by default */
+  } 
+}
+
+
+    @media only screen and (max-width: 600px) {
+      .row { text-align: center; }
+      .col-2 { flex-basis: 100%; }
+    }
+
+    .header { background: #fff; }
+
+    .footer {
+      background: #000;
+      color: #8a8a8a;
+      font-size: 14px;
+      padding: 30px 0 10px;
+    }
+    .footer p { color: #8a8a8a; }
+    .footer-col-1, .footer-col-2 { min-width: 100px; margin-bottom: 10px; }
+    .footer-col-1 { flex-basis: 30%; }
+    .footer-col-2 { flex: 1; }
+    .footer-col-1 img { width: 100px; }
+    .footer hr { border: none; margin: 10px 0; height: 1px; background: #b5b5b5; }
+    .copyright { text-align: center; }
+  </style>
 </head>
 <body>
   <div class="header">
     <div class="container">
-     <div class="navbar">
-       <div class="logo">
-          <img src="logo2.png" width="155px">
+      <div class="navbar">
+        <div class="logo">
+          <img src="logo2.png" width="155px" alt="Logo">
         </div>
-       <nav>
+        <nav>
           <ul id="MenuItems">
-             <li><a href="products.html">Tools categories</a></li>
-             <li><a href="help.html">Help</a></li>
+            <li><a href="products.html">Tools categories</a></li>
+            <li><a href="login.html">Open Account</a></li>
+            <li><a href="help.html">Help</a></li>
           </ul>
         </nav>
-        <img src="menue.png" class="menue-icon" 
-          onclick="menutoggle()">
-       </div>
-       <div class="row">
-         <div class="col-2">
-             <h1>Welcome to forex secret world</h1>
-             <p>This website contains forex PDF books, robots, and indicators that
-                can help losing traders to maximise their profit in the market.</p>
-             <a href="products.html" class="btn-1">Explore Now &#8594;</a>
-         </div>
-         <div class="col-2">
-               <img src="forexpicture.jpg">
-         </div>
-       </div>
+        <!-- ✅ Login always visible -->
+        <a href="login.html" class="login-link">Signup</a>
+        <img src="menue.png" class="menue-icon" onclick="menutoggle()" alt="Menu Icon">
+      </div>
+
+      <div class="row">
+        <div class="col-2">
+          <h1>Welcome to forex secret world</h1>
+          <p>This website contains forex PDF books, robots, and indicators that
+             can help losing traders to maximise their profit in the market.</p>
+          <a href="products.html" class="btn-1">Explore Now &#8594;</a>
+        </div>
+        <div class="col-2">
+          <img src="forexpicture.jpg" alt="Forex Picture">
+        </div>
+      </div>
     </div>
   </div>
-  <script>
-   var MenuItems = document.getElementById("MenuItems");
 
+<script>
+  var MenuItems = document.getElementById("MenuItems");
+  var menuBtn = document.querySelector(".menue-icon");
+
+  // Initially collapse menu
+  MenuItems.style.maxHeight = "0px";
+
+  // Toggle menu on button click
+  function menutoggle() {
+    if (MenuItems.style.maxHeight === "0px") {
+      MenuItems.style.maxHeight = MenuItems.scrollHeight + "px"; // dynamic height
+    } else {
       MenuItems.style.maxHeight = "0px";
- 
-      function menutoggle(){
-                            if(MenuItems.style.maxHeight == "0px")
-                            {MenuItems.style.maxHeight = "200px";} 
-                            else
-                            {MenuItems.style.maxHeight = "0px"; }       
+    }
+  }
 
-                            }
-  </script>
+  // Close menu if user clicks outside
+  document.addEventListener("click", function(event) {
+    if (!MenuItems.contains(event.target) && !menuBtn.contains(event.target)) {
+      MenuItems.style.maxHeight = "0px";
+    }
+  });
+</script>
+
+
   <div class="footer">
-      <div class="container">
-         <div class="row">
-            <div class="footer-col-1">
-               <img src="logo2.png"> 
-            </div>
-            
-            <div class="footer-col-2">
-               <p>Our purpose is to make sure that some traders, those who are lucky                       become successful.
-               </p> 
-            </div>
-         </div>
+    <div class="container">
+      <div class="row">
+        <div class="footer-col-1">
+          <img src="logo2.png" alt="Footer Logo">
+        </div>
+        <div class="footer-col-2">
+          <p>Our purpose is to make sure that some traders, those who are lucky, become successful.</p>
+        </div>
       </div>
-      <hr>
-      <p class="copyright">Copyright 1988-2025 : Forex secret world</p>
+    </div>
+    <hr>
+    <p class="copyright">Copyright 1988-2025 : Forex Secret World</p>
   </div>
-  </div>
-
 </body>
 </html>
+
+
 
 
 
