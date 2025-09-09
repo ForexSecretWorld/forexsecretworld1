@@ -63,6 +63,85 @@ p {
   line-height: 20px;
   margin: 25px 0;
 }
+
+
+.small-container {
+  width: 90%;
+  margin: auto;
+  text-align: center;
+}
+
+.small-container-heading {
+  margin-top: 30px; /* adjust as needed */
+  display: inline-block;      /* shrink-wrap to content */
+  text-align: center;
+}
+
+.small-container-heading h2 {
+  font-size: 24px;
+  margin-bottom: 6px;
+  display: inline-block;      /* ensures hr lines up */
+}
+
+.small-container-heading hr {
+  height: 3px;                
+  background-color: #ff523b;  
+  border: none;
+  border-radius: 2px;
+  margin: 0 auto;
+  width: 100%;                /* will match h2 width */
+}
+
+
+.row {
+  margin-top: 30px; /* adjust as needed */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around; /* space evenly */
+  gap: 20px; /* spacing between items */
+}
+
+.col-4 {
+  flex: 1 1 22%; /* roughly 4 per row */
+  max-width: 22%;
+  background: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+
+.col-4:hover {
+  transform: translateY(-5px);
+}
+
+.col-4 img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.col-4 h4 {
+  margin: 12px 0;
+  font-size: 16px;
+}
+
+.col-4 a {
+      display: inline-block;
+      background: #ff523b;
+      color: #fff;
+      padding: 8px 30px;
+      margin: 10px;
+      border-radius: 30px;
+      transition: background 0.5s;
+}
+
+.col-4 a:hover {
+  background: #563434;
+}
+
+
+
 /* Buttons */
 .btn, .btn1, .btn-1, .btn-2, .btn-3, .btn-4 {
   display: inline-block;
@@ -1070,6 +1149,23 @@ table.account-table th {
     padding: 15px;
     min-height: 480px;
 }
+
+  .small-container-heading {
+    display: block;       /* take full width */
+    text-align: center;   /* keep heading centered */
+  }
+
+  .row {
+    display: flex;             /* keep flex active */
+    flex-direction: column;    /* stack items vertically */
+    align-items: center;       /* center horizontally */
+    text-align: center;        /* center text inside */
+  }
+
+  .col-4 {
+    flex: 1 1 100%;
+    max-width: 90%;
+  }
 
 }
 
