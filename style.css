@@ -66,7 +66,7 @@ p {
 
 
 .small-container {
-  width: 90%;
+  width: 96%;
   margin: auto;
   text-align: center;
 }
@@ -105,7 +105,7 @@ p {
   flex: 1 1 22%; /* roughly 4 per row */
   max-width: 22%;
   background: #fff;
-  padding: 15px;
+  padding: 8px;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   transition: transform 0.2s;
@@ -1164,10 +1164,11 @@ table.account-table th {
 
   .col-4 {
     flex: 1 1 100%;
-    max-width: 90%;
+    max-width: 100%;
   }
 
 }
+
 
 
 
