@@ -376,10 +376,17 @@ onAuthStateChanged(auth, (user) => {
       // Step 2: fetch user's data from /users/{uid2}
       const userSnapshot = await get(ref(db, `users/${uid2}`));
       if (!userSnapshot.exists()) {
-        tbody.innerHTML = "<tr><td colspan='5'>No trading account yet</td></tr>";
-        return;
+         tbody.innerHTML = "<tr><td colspan='5'>No trading account yet</td></tr>";
+         return;
       }
       const userData = userSnapshot.val();
+
+      // ✅ Check if the snapshot has valid fields
+      if (!userData || !userData.accountNumber) {
+         tbody.innerHTML = "<tr><td colspan='5'>No trading account yet</td></tr>";
+         return;
+      }
+
 
       // Step 3: display the row (always use ForexSecretWorld as name)
       const row = `
@@ -446,6 +453,7 @@ onAuthStateChanged(auth, (user) => {
 
 </body>
 </html>
+
 
 
 
