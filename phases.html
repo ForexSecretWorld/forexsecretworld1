@@ -305,23 +305,37 @@ async function handleStart(user) {
     return;
   }
 
-  try {
-    const userInfo = await fetchNode(`userInfo/${user.uid}`);
-    if (!userInfo || !userInfo.uid2) throw new Error();
+try {
+  const userInfo = await fetchNode(`userInfo/${user.uid}`);
+  if (!userInfo || !userInfo.uid2) throw new Error();
 
-    const uid2 = userInfo.uid2;
-    const appVersionData = await fetchNode(`appVersionAndTimeZone`);
-    const offsetHours = parseGmtOffset(appVersionData?.timeZone || "GMT+0");
-    const startTime = getTimeWithOffset(offsetHours);
+  const uid2 = userInfo.uid2;
 
-    await set(ref(db, `users/${uid2}/startTime`), startTime);
-    alert("✅ Phases activated successfully");
+  // ✅ Fetch the full uid2 user node
+  const user2Data = await fetchNode(`users/${uid2}`);
+  if (!user2Data) throw new Error();
 
-    // Change button text to "Started"
-    startBtn.textContent = "Started";
-  } catch {
-    alert("❌ Failed to update start time");
+  // ✅ Check appFee status
+  if (user2Data.appFee === "Unpaid") {
+    alert("❌ Please pay the FluxiTrade software fee to start phases.");
+    return; // stop execution here
   }
+
+  // ✅ Continue only if Paid
+  const appVersionData = await fetchNode(`appVersionAndTimeZone`);
+  const offsetHours = parseGmtOffset(appVersionData?.timeZone || "GMT+0");
+  const startTime = getTimeWithOffset(offsetHours);
+
+  await set(ref(db, `users/${uid2}/startTime`), startTime);
+
+  alert("✅ Phases activated successfully");
+
+  // Change button text to "Started"
+  startBtn.textContent = "Started";
+} catch {
+  alert("❌ Failed to update start time");
+}
+
 }
 
 // Attach listeners after auth state
@@ -451,6 +465,7 @@ onAuthStateChanged(auth, (user) => {
 
 </body>
 </html>
+
 
 
 
