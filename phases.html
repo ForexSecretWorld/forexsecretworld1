@@ -306,22 +306,30 @@ async function handleStart(user) {
   }
 
 try {
+  // 1️⃣ Get uid2 from userInfo
   const userInfo = await fetchNode(`userInfo/${user.uid}`);
-  if (!userInfo || !userInfo.uid2) throw new Error();
+  if (!userInfo || !userInfo.uid2) throw new Error("uid2 not found in userInfo");
 
   const uid2 = userInfo.uid2;
 
-  // ✅ Fetch the full uid2 user node
+  // 2️⃣ Fetch uid2 user data
   const user2Data = await fetchNode(`users/${uid2}`);
-  if (!user2Data) throw new Error();
+  if (!user2Data) throw new Error("User data not found");
 
-  // ✅ Check appFee status
-  if (user2Data.appFee === "Unpaid") {
+  // 3️⃣ Normalize appFee value
+  const appFeeStatus = String(user2Data.appFee || "")
+    .trim()
+    .toLowerCase();
+
+  console.log("appFee from DB:", user2Data.appFee, " → normalized:", appFeeStatus);
+
+  // 4️⃣ Check appFee status
+  if (appFeeStatus === "unpaid") {
     alert("❌ Please pay the FluxiTrade software fee to start phases.");
     return; // stop execution here
   }
 
-  // ✅ Continue only if Paid
+  // 5️⃣ Continue only if Paid
   const appVersionData = await fetchNode(`appVersionAndTimeZone`);
   const offsetHours = parseGmtOffset(appVersionData?.timeZone || "GMT+0");
   const startTime = getTimeWithOffset(offsetHours);
@@ -329,12 +337,12 @@ try {
   await set(ref(db, `users/${uid2}/startTime`), startTime);
 
   alert("✅ Phases activated successfully");
-
-  // Change button text to "Started"
-  startBtn.textContent = "Started";
-} catch {
+  startBtn.textContent = "Started"; // update button text
+} catch (err) {
+  console.error("Error in phase activation:", err);
   alert("❌ Failed to update start time");
 }
+
 
 }
 
@@ -465,6 +473,7 @@ onAuthStateChanged(auth, (user) => {
 
 </body>
 </html>
+
 
 
 
