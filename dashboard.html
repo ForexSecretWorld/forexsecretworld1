@@ -397,7 +397,7 @@ onAuthStateChanged(auth, (user) => {
             ${userData.accountNumber} <br>
             ForexSecretWorld
           </td>
-          <td>$${userData.balance}</td>
+          <td>$${Number(userData.balance).toFixed(2)}</td>
           <td>
             <button id="viewBtn" class="btn-action view">View</button>
           </td>
@@ -455,6 +455,7 @@ onAuthStateChanged(auth, (user) => {
 
 </body>
 </html>
+
 
 
 
