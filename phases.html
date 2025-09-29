@@ -399,7 +399,7 @@ async function handleEnd(user) {
 
     
      
-    if (balance === 0) {
+    if (balance < 50) {
      // 7️⃣ Delete trading account
      await remove(ref(db, `users/${uid2}`));
 
@@ -467,6 +467,7 @@ onAuthStateChanged(auth, (user) => {
 
 </body>
 </html>
+
 
 
 
