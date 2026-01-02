@@ -418,8 +418,8 @@ async function handleEnd(user) {
       return;
     }
 
-    if (phase8Status !== "✅ Passed") {
-      alert("❌ Last phase not passed yet");
+    if (phase8Status == "✅ Passed") {
+      alert("❌ Some error occured, please try again later!!");
       return;
     }
 
@@ -467,6 +467,7 @@ onAuthStateChanged(auth, (user) => {
 
 </body>
 </html>
+
 
 
 
