@@ -422,6 +422,10 @@ async function handleEnd(user) {
       alert("❌ Some error occured, please try again later!!");
       return;
     }
+    if (phase8Status !== "✅ Passed") {
+      alert("❌ Phase 8 not passed yet!!");
+      return;
+    }
 
     // 5️⃣ Current mainBalance
     const currentMainBalance = parseFloat(userInfo.mainBalance ?? 0);
@@ -467,6 +471,7 @@ onAuthStateChanged(auth, (user) => {
 
 </body>
 </html>
+
 
 
 
