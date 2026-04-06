@@ -135,7 +135,7 @@
 <!-- Send user data to database -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 // 🔹 Firebase config
@@ -150,46 +150,64 @@ const firebaseConfig = {
   measurementId: "G-NTQSJ4LBC7"
 };
 
-// 🔹 Initialize Firebase
+// 🔹 Init
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// 🔹 Form reference
+// 🔹 Form
 const form = document.getElementById("fundRequestForm");
 
-// 🔹 Submit handler
-form.addEventListener("submit", (e) => {
-  e.preventDefault(); // prevent page reload
+// ==============================
+// 🔥 STEP 1: AUTO LOGIN ON PAGE LOAD
+// ==============================
+const savedEmail = localStorage.getItem("savedEmail");
+const savedPassword = localStorage.getItem("savedPassword");
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      alert("You must be logged in to submit a request!");
-      return;
-    }
+if (!auth.currentUser && savedEmail && savedPassword) {
+  try {
+    await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
+    console.log("Auto login success");
+  } catch (err) {
+    console.error("Auto login failed:", err);
+  }
+}
 
-    // Collect form data
-    const formData = {
-      uid: user.uid, // ✅ store UID as a child
-      fullName: document.getElementById("fullName").value,
-      email: document.getElementById("email").value,
-      submittedAt: new Date().toISOString(),
-      status: "Pending"
-    };
+// ==============================
+// 🔥 STEP 2: HANDLE FORM SUBMIT
+// ==============================
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    try {
-      // ✅ Save under usersRequestingFunds/{uid} with UID also as child
-      await set(ref(db, `usersRequestingFunds/${user.uid}`), formData);
+  const user = auth.currentUser;
 
-      alert("Your request has been submitted successfully!");
-      form.reset();
-      window.location.href = "status.html";
-      
-    } catch (err) {
-      console.error("Submission error:", err);
-      alert("Failed to submit request. Please try again.");
-    }
-  });
+  // ❌ If still not logged in
+  if (!user) {
+    alert("You must be logged in to submit a request!");
+    return;
+  }
+
+  // ✅ Collect form data
+  const formData = {
+    uid: user.uid,
+    fullName: document.getElementById("fullName").value,
+    submittedAt: new Date().toISOString(),
+    status: "Pending"
+  };
+
+  try {
+    // ✅ Save request
+    await set(ref(db, `usersRequestingFunds/${user.uid}`), formData);
+
+    alert("Your request has been submitted successfully!");
+    form.reset();
+
+    window.location.href = "status.html";
+
+  } catch (err) {
+    console.error("Submission error:", err);
+    alert("Failed to submit request. Please try again.");
+  }
 });
 </script>
 
