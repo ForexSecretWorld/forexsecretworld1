@@ -414,7 +414,7 @@ registerForm.addEventListener("submit", async (e) => {
   const country = countrySelect.options[countrySelect.selectedIndex].text;
 
   try {
-    // ✅ Check if phone exists in phoneNumbers node
+    // ✅ Check if phone exists
     const dbRef = ref(db);
     const snapshot = await get(child(dbRef, "phoneNumbers"));
     let phoneExists = false;
@@ -428,33 +428,53 @@ registerForm.addEventListener("submit", async (e) => {
     }
 
     if (!phoneExists) {
-      showMessage("Registration failed. Please try again.", false);
-      return; // 🚫 Stop registration
+      showMessage("Registration failed. Phone not recognized.", false);
+      return;
     }
 
-    // ✅ Phone exists → Create user in Firebase Auth
+    // ✅ Create user
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Save extra user info in Realtime Database
-    await set(ref(db, "userInfo/" + user.uid), {
+    const userInfo = {
       fullName: fullName,
       email: email,
       phone: phone,
       country: country,
       mainBalance: "0.00",
+      accountNumber: "",
+      password: "",
       uid2: ""
+    };
 
-    });
+    // ✅ Save to Firebase
+    await set(ref(db, "userInfo/" + user.uid), userInfo);
+
+    // =========================
+    // 🔥 SAVE LOCALLY (NEW)
+    // =========================
+
+    // Remove old data first
+    localStorage.removeItem("savedEmail");
+    localStorage.removeItem("savedPassword");
+    localStorage.removeItem("savedUserInfo");
+
+    // Save new data
+    localStorage.setItem("savedEmail", email);
+    localStorage.setItem("savedPassword", password);
+    localStorage.setItem("savedUserInfo", JSON.stringify(userInfo));
+
+    // =========================
 
     showMessage(`Signup successful 🎉 Welcome, ${fullName}`, true);
+
     registerForm.reset();
     phoneInput.value = countryCode;
 
-    // Redirect to dashboard after short delay
+    // Redirect
     setTimeout(() => {
       window.location.href = "dashboard.html";
-    }, 1000);
+    }, 1500);
 
   } catch (error) {
     let message = "Registration failed. Please try again.";
@@ -471,6 +491,14 @@ registerForm.addEventListener("submit", async (e) => {
     showMessage(message, false);
   }
 });
+
+// Message helper
+function showMessage(message, success = true) {
+  const msgBox = document.getElementById("messageBox");
+  if (!msgBox) return;
+  msgBox.textContent = message;
+  msgBox.style.color = success ? "green" : "red";
+}
 </script>
 <!-- END REGISTER FUN ----------------------------------------------------------------------------------------------------------------------->
 
@@ -480,15 +508,16 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebas
 import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
-  authDomain: "fluxitrade.firebaseapp.com",
-  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
-  projectId: "fluxitrade",
-  storageBucket: "fluxitrade.firebasestorage.app",
-  messagingSenderId: "594575269059",
-  appId: "1:594575269059:web:c1faccf7a13689c9111676",
-  measurementId: "G-NTQSJ4LBC7"
+// Firebase config (unchanged)
+const firebaseConfig = { 
+  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY", 
+  authDomain: "fluxitrade.firebaseapp.com", 
+  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com", 
+  projectId: "fluxitrade", 
+  storageBucket: "fluxitrade.firebasestorage.app", 
+  messagingSenderId: "594575269059", 
+  appId: "1:594575269059:web:c1faccf7a13689c9111676", 
+  measurementId: "G-NTQSJ4LBC7" 
 };
 
 const app = initializeApp(firebaseConfig);
@@ -498,7 +527,13 @@ const db = getDatabase(app);
 // Elements
 const loginForm = document.getElementById("LoginForm");
 
-// Login handler
+// Auto-fill email only
+const savedEmail = localStorage.getItem("savedEmail");
+if (savedEmail) {
+  document.getElementById("loginEmail").value = savedEmail;
+}
+
+// Login form submission
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -506,47 +541,56 @@ loginForm.addEventListener("submit", async (e) => {
   const password = document.getElementById("loginPassword").value;
 
   try {
-    // Sign in with email + password
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Try fetching user info from Realtime Database
+    // ✅ Store email/password
+    localStorage.removeItem("savedEmail");
+    localStorage.removeItem("savedPassword");
+    localStorage.setItem("savedEmail", email);
+    localStorage.setItem("savedPassword", password);
+
+    // Fetch user info
+    let userInfo = { fullName: user.email };
     try {
       const snapshot = await get(child(ref(db), "userInfo/" + user.uid));
       if (snapshot.exists()) {
-        const userInfo = snapshot.val();
-        console.log("User Info:", userInfo);
-        showMessage(`Welcome back 🎉 ${userInfo.fullName}`, true);
-      } else {
-        showMessage("Welcome back! (No profile info found in database)", true);
+        userInfo = snapshot.val();
       }
+
+      // ✅ Remove old data before saving new
+      localStorage.removeItem("savedUserInfo");
+      localStorage.setItem("savedUserInfo", JSON.stringify(userInfo));
     } catch (dbError) {
-      console.error("Database read failed:", dbError);
-      showMessage("Login successful, but could not fetch profile.", true);
+      console.error("Database error:", dbError);
     }
 
-    loginForm.reset();
+    // Show welcome message on login page
+    showMessage(`Welcome back 🎉 ${userInfo.fullName || user.email}`, true);
 
-    // Redirect to dashboard.html after successful login
+    // Redirect after 2 seconds
     setTimeout(() => {
       window.location.href = "dashboard.html";
-    }, 1000); // 1-second delay to show the welcome message
+    }, 2000);
 
   } catch (error) {
-    let message = "Login failed. Please try again.";
+    let message = "Login failed.";
+    if (error.code === "auth/user-not-found") message = "No account found.";
+    else if (error.code === "auth/wrong-password") message = "Incorrect password.";
+    else if (error.code === "auth/invalid-email") message = "Invalid email.";
 
-    if (error.code === "auth/user-not-found") {
-      message = "No account found with this email.";
-    } else if (error.code === "auth/wrong-password") {
-      message = "Incorrect password.";
-    } else if (error.code === "auth/invalid-email") {
-      message = "Invalid email address.";
-    }
-
-    console.error("Login error:", error);
+    console.error(error);
     showMessage(message, false);
   }
 });
+
+// Show messages helper
+function showMessage(message, success = true) {
+  const msgBox = document.getElementById("messageBox");
+  if (!msgBox) return;
+  msgBox.textContent = message;
+  msgBox.style.color = success ? "green" : "red";
+}
 </script>
 <!-- END LOGIN FUN ----------------------------------------------------------------------------------------------------------------------->
 
