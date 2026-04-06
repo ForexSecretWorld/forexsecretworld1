@@ -208,7 +208,7 @@ function togglePassword() {
 </script>
 
 
-<!-- fetched user info (replace with your DB data) --------------------------------------------------------------------------------------------------------->
+<!-- fetched user info --------------------------------------------------------------------------------------------------------->
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
@@ -334,106 +334,125 @@ onAuthStateChanged(auth, (user) => {
 
 <!-- fetched trading account data --------------------------------------------------------------------------------------------------------->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-  // 🔹 Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
-    authDomain: "fluxitrade.firebaseapp.com",
-    databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
-    projectId: "fluxitrade",
-    storageBucket: "fluxitrade.firebasestorage.app",
-    messagingSenderId: "594575269059",
-    appId: "1:594575269059:web:c1faccf7a13689c9111676",
-    measurementId: "G-NTQSJ4LBC7"
-  };
+// 🔹 Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
+  authDomain: "fluxitrade.firebaseapp.com",
+  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
+  projectId: "fluxitrade",
+  storageBucket: "fluxitrade.firebasestorage.app",
+  messagingSenderId: "594575269059",
+  appId: "1:594575269059:web:c1faccf7a13689c9111676",
+  measurementId: "G-NTQSJ4LBC7"
+};
 
-  // 🔹 Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
+// 🔹 Init
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-  // 🔹 Table body
-  const tbody = document.querySelector(".account-table tbody");
-  tbody.innerHTML = ""; // Clear previous rows
+const tbody = document.querySelector(".account-table tbody");
+tbody.innerHTML = "";
 
-  // 🔹 Load current user's data
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      tbody.innerHTML = "<tr><td colspan='5'>You are not logged in</td></tr>";
-      return;
+// 🔹 Get local data
+const localData = JSON.parse(localStorage.getItem("savedUserInfo") || "{}");
+const accountNumber = localData.accountNumber || "";
+const password = localData.password || "";
+
+// ==============================
+// 🔥 STEP 1: WAIT FOR AUTH STATE
+// ==============================
+onAuthStateChanged(auth, async (user) => {
+
+  // ==============================
+  // 🔥 STEP 2: IF NOT LOGGED IN → TRY AUTO LOGIN
+  // ==============================
+  if (!user) {
+
+    if (!accountNumber || !password) {
+      tbody.innerHTML = "<tr><td colspan='5'>Please log in</td></tr>";
+      return; // ❌ NO REDIRECT
     }
 
     try {
-      // Step 1: get uid2 from /userInfo/{uid}/uid2
-      const userInfoSnapshot = await get(ref(db, `userInfo/${user.uid}/uid2`));
-      if (!userInfoSnapshot.exists()) {
-        tbody.innerHTML = "<tr><td colspan='5'>No user info found</td></tr>";
-        return;
-      }
-      const uid2 = userInfoSnapshot.val();
-
-      // Step 2: fetch user's data from /users/{uid2}
-      const userSnapshot = await get(ref(db, `users/${uid2}`));
-      if (!userSnapshot.exists()) {
-         tbody.innerHTML = "<tr><td colspan='5'>No trading account yet</td></tr>";
-         return;
-      }
-      const userData = userSnapshot.val();
-
-      // ✅ Check if the snapshot has valid fields
-      if (!userData || !userData.accountNumber) {
-         tbody.innerHTML = "<tr><td colspan='5'>No trading account yet</td></tr>";
-         return;
-      }
-
-
-      // Step 3: display the row (always use ForexSecretWorld as name)
-      const row = `
-        <tr>
-          <td>
-            ${userData.accountNumber} <br>
-            ForexSecretWorld
-          </td>
-          <td>$${Number(userData.balance).toFixed(2)}</td>
-          <td>
-            <button id="viewBtn" class="btn-action view">View</button>
-          </td>
-          <td>
-            <input type="password" value="${userData.password}" id="password-${uid2}" readonly>
-            <button onclick="togglePassword('password-${uid2}')" style="border:none; background:none; cursor:pointer;">
-              👁️
-            </button>
-          </td>
-          <td>${userData.appFee}</td>
-        </tr>
-      `;
-      tbody.insertAdjacentHTML("beforeend", row);
-
-      // 🔹 Check for Peter Nkosi and attach correct redirect
-      const fullName = (userData.name || "").trim().toLowerCase();
-      const viewBtn = document.getElementById("viewBtn");
-      viewBtn.onclick = () => {
-        if (fullName === "peter michael nkosi") {
-          window.location.href = "phases2.html";
-        } else {
-          window.location.href = "phases.html";
-        }
-      };
-
+      const email = accountNumber + "@fluxitrade.com";
+      await signInWithEmailAndPassword(auth, email, password);
+      return; // wait for next auth state trigger
     } catch (err) {
-      console.error("Error loading user data:", err);
-      tbody.innerHTML = "<tr><td colspan='5'>Error loading user data</td></tr>";
+      console.error("Auto login failed:", err);
+      tbody.innerHTML = "<tr><td colspan='5'>Login failed</td></tr>";
+      return; // ❌ NO REDIRECT
     }
-  });
+  }
 
-  // 🔹 Toggle password visibility
-  window.togglePassword = function(id) {
-    const field = document.getElementById(id);
-    field.type = (field.type === "password") ? "text" : "password";
-  };
+  // ==============================
+  // 🔥 STEP 3: USER IS LOGGED IN
+  // ==============================
+  try {
+    const uid2 = localData.uid2 || "";
+
+    // ✅ FIX: DO NOT REDIRECT
+    if (!uid2 || uid2.trim() === "") {
+      tbody.innerHTML = "<tr><td colspan='5'>No trading account yet</td></tr>";
+      return;
+    }
+
+    const snapshot = await get(ref(db, `users/${uid2}`));
+
+    if (!snapshot.exists()) {
+      tbody.innerHTML = "<tr><td colspan='5'>No trading account yet</td></tr>";
+      return;
+    }
+
+    const userData = snapshot.val();
+
+    const row = `
+      <tr>
+        <td>
+          ${accountNumber}<br>
+          ForexSecretWorld
+        </td>
+        <td>$${userData.balance || "0.00"}</td>
+        <td>
+          <button id="viewBtn" class="btn-action view">View</button>
+        </td>
+        <td>
+          <input type="password" value="${password}" id="password-${uid2}" readonly>
+          <button onclick="togglePassword('password-${uid2}')" style="border:none; background:none; cursor:pointer;">
+            👁️
+          </button>
+        </td>
+        <td>${userData.appFee || "0.00"}</td>
+      </tr>
+    `;
+
+    tbody.innerHTML = row;
+
+    // 🔹 Button logic
+    const fullName = (userData.name || "").toLowerCase();
+    document.getElementById("viewBtn").onclick = () => {
+      if (fullName === "peter michael nkosi") {
+        window.location.href = "phases2.html";
+      } else {
+        window.location.href = "phases.html";
+      }
+    };
+
+  } catch (err) {
+    console.error(err);
+    tbody.innerHTML = "<tr><td colspan='5'>Error loading data</td></tr>";
+  }
+});
+
+// 🔹 Toggle password
+window.togglePassword = function(id) {
+  const field = document.getElementById(id);
+  field.type = field.type === "password" ? "text" : "password";
+};
 </script>
 
 
