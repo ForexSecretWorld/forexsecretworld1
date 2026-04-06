@@ -92,7 +92,7 @@
 <!-- JS Profile Render -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 const firebaseConfig = {
@@ -106,20 +106,42 @@ const firebaseConfig = {
   measurementId: "G-NTQSJ4LBC7"
 };
 
-// Init Firebase
+// 🔹 Init Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// Listen for logged in user
+// ==============================
+// 🔥 STEP 1: AUTO LOGIN
+// ==============================
+const savedEmail = localStorage.getItem("savedEmail");
+const savedPassword = localStorage.getItem("savedPassword");
+
+if (!auth.currentUser && savedEmail && savedPassword) {
+  try {
+    await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
+    console.log("Auto login success");
+  } catch (err) {
+    console.error("Auto login failed:", err);
+  }
+}
+
+// ==============================
+// 🔥 STEP 2: LOAD PROFILE
+// ==============================
 onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    // Get fresh data from database
+
+  if (!user) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  try {
     const snapshot = await get(child(ref(db), "userInfo/" + user.uid));
+
     if (snapshot.exists()) {
       const userInfo = snapshot.val();
 
-      // Populate profile page
       document.getElementById("profileCard").innerHTML = `
         <div class="profile-item"><span class="label">Name:</span> <span class="value">${userInfo.fullName || "N/A"}</span></div>
         <div class="profile-item"><span class="label">Country:</span> <span class="value">${userInfo.country || "N/A"}</span></div>
@@ -130,15 +152,24 @@ onAuthStateChanged(auth, async (user) => {
     } else {
       document.getElementById("profileCard").innerHTML = "<p>No profile data found.</p>";
     }
-  } else {
-    // No user signed in → redirect back to login
-    window.location.href = "login.html";
+
+  } catch (err) {
+    console.error("Error loading profile:", err);
+    document.getElementById("profileCard").innerHTML = "<p>Error loading profile.</p>";
   }
 });
 
-// Optional logout function
+// ==============================
+// 🔥 STEP 3: LOGOUT
+// ==============================
 document.getElementById("logoutBtn")?.addEventListener("click", async () => {
   await signOut(auth);
+
+  // 🔹 Clear local storage (important)
+  localStorage.removeItem("savedEmail");
+  localStorage.removeItem("savedPassword");
+  localStorage.removeItem("savedUserInfo");
+
   window.location.href = "login.html";
 });
 </script>
