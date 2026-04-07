@@ -74,67 +74,56 @@
   </script>
 
   <!-- Firebase script for status only -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
-      authDomain: "fluxitrade.firebaseapp.com",
-      databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
-      projectId: "fluxitrade",
-      storageBucket: "fluxitrade.firebasestorage.app",
-      messagingSenderId: "594575269059",
-      appId: "1:594575269059:web:c1faccf7a13689c9111676",
-      measurementId: "G-NTQSJ4LBC7"
-    };
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
+  authDomain: "fluxitrade.firebaseapp.com",
+  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
+  projectId: "fluxitrade",
+  storageBucket: "fluxitrade.firebasestorage.app",
+  messagingSenderId: "594575269059",
+  appId: "1:594575269059:web:c1faccf7a13689c9111676",
+  measurementId: "G-NTQSJ4LBC7"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-    const statusContainer = document.getElementById("statusContainer");
+const statusContainer = document.getElementById("statusContainer");
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        statusContainer.innerHTML = "<p>Please log in to see your request status.</p>";
-        return;
-      }
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    statusContainer.innerHTML = "<p>Please log in to see your request status.</p>";
+    return;
+  }
 
-      try {
-        const requestsSnapshot = await get(ref(db, "usersRequestingFunds"));
-        if (requestsSnapshot.exists()) {
-          const requests = requestsSnapshot.val();
-          let latestRequest = null;
+  try {
+    // 🔹 Fetch only the current user's request
+    const requestSnapshot = await get(ref(db, `usersRequestingFunds/${user.uid}`));
 
-          Object.keys(requests).forEach(key => {
-            const data = requests[key];
-            if (data.uid === user.uid) {
-              if (!latestRequest || data.submittedAt > latestRequest.submittedAt) {
-                latestRequest = data;
-              }
-            }
-          });
-
-          if (latestRequest) {
-            statusContainer.innerHTML = `
-              <h3>Your trading funds request has been submitted successfully!</h3>
-              <p>Status: <strong>${latestRequest.status}</strong></p>
-              <p>Submitted at: ${new Date(latestRequest.submittedAt).toLocaleString()}</p>
-            `;
-          } else {
-            statusContainer.innerHTML = "<p>You have no trading funds requests yet.</p>";
-          }
-        } else {
-          statusContainer.innerHTML = "<p>You have no trading funds requests yet.</p>";
-        }
-      } catch (err) {
-        console.error("Failed to fetch request status:", err);
-        statusContainer.innerHTML = "<p>Could not fetch request status. Please try again later.</p>";
-      }
-    });
-  </script>
+    if (requestSnapshot.exists()) {
+      const request = requestSnapshot.val();
+      statusContainer.innerHTML = `
+        <h3>Your trading funds request has been submitted successfully!</h3>
+        <p>Status: <strong>${request.status}</strong></p>
+        <p>Submitted at: ${new Date(request.submittedAt).toLocaleString()}</p>
+      `;
+    } else {
+      statusContainer.innerHTML = "<p>You have no trading funds requests yet.</p>";
+    }
+  } catch (err) {
+    console.error("Failed to fetch request status:", err);
+    statusContainer.innerHTML = "<p>Could not fetch request status. Please try again later.</p>";
+  }
+});
+</script>
 
 </body>
 </html>
