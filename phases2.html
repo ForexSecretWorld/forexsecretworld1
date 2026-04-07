@@ -112,10 +112,10 @@
 <!-- fetched trading account data --------------------------------------------------------------------------------------------------------->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getAuth, signOut, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-// Firebase config
+// 🔹 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
   authDomain: "fluxitrade.firebaseapp.com",
@@ -127,11 +127,12 @@ const firebaseConfig = {
   measurementId: "G-NTQSJ4LBC7"
 };
 
-// Initialize Firebase
+// 🔹 Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
+// 🔹 DOM elements
 const balanceSummaryEls = document.querySelectorAll(".balance-summary p");
 const balanceEl = balanceSummaryEls[0];
 const withdrawableEl = balanceSummaryEls[1];
@@ -141,18 +142,22 @@ const daysEl = balanceSummaryEls[4];
 const startBtn = document.querySelector(".startEnd-btn.start");
 const tableRows = document.querySelectorAll(".account-table tbody tr");
 
+// 🔹 Get local data
+const localData = JSON.parse(localStorage.getItem("savedUserInfo") || "{}");
+const accountNumber = localData.accountNumber || "";
+const password = localData.password || "";
+
 // --- Phase Table Defaults Storage ---
 let defaultBalances = [];
 document.addEventListener("DOMContentLoaded", () => {
-  const rows = document.querySelectorAll(".account-table tbody tr");
-  rows.forEach(row => {
+  tableRows.forEach(row => {
     const balanceCell = row.cells[1];
     const balanceText = balanceCell.textContent.replace(/[^0-9]/g, "");
     defaultBalances.push(parseInt(balanceText, 10));
   });
 });
 
-// --- Firebase Helpers ---
+// --- Firebase helpers ---
 function parseGmtOffset(gmtString) {
   const match = gmtString.match(/GMT([+-]\d+)/);
   return match ? parseInt(match[1], 10) : 0;
@@ -160,7 +165,6 @@ function parseGmtOffset(gmtString) {
 
 function calculateDaysTaken(startTime, gmtOffset) {
   if (!startTime || startTime === "0") return 0;
-
   const parts = startTime.split(/[- :]/);
   const startDate = new Date(
     Date.UTC(
@@ -172,12 +176,12 @@ function calculateDaysTaken(startTime, gmtOffset) {
       parseInt(parts[5])
     )
   );
-
   const nowUTC = new Date();
   const diffMs = nowUTC.getTime() - startDate.getTime();
   return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 }
 
+// --- Fetch helper ---
 async function fetchNode(path) {
   try {
     const snap = await get(ref(db, path));
@@ -187,21 +191,41 @@ async function fetchNode(path) {
   }
 }
 
-// --- Auth listener ---
-onAuthStateChanged(auth, async (user) => {
-  if (!user) return;
-
+// --- Auto login using accountNumber ---
+async function autoLogin() {
   try {
-    const uid2 = await fetchNode(`userInfo/${user.uid}/uid2`);
-    if (!uid2) throw new Error("uid2 not found");
+    // Sign out any existing session without redirect
+    if (auth.currentUser) await signOut(auth);
 
-    const userData = await fetchNode(`users/${uid2}`);
-    if (!userData) throw new Error("User data not found");
+    const email = accountNumber + "@fluxitrade.com";
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
+  } catch (err) {
+    console.error("Auto login failed:", err);
+    return null;
+  }
+}
+
+// --- Main logic ---
+onAuthStateChanged(auth, async (user) => {
+  try {
+    // 🔹 If not logged in, login with accountNumber
+    if (!user) user = await autoLogin();
+    if (!user) return;
+
+    const uid = user.uid;
+
+    // 🔹 Fetch user trading account data using the UID of accountNumber email
+    const userData = await fetchNode(`users/${uid}`);
+    if (!userData) {
+      console.error("No trading account found for this user.");
+      return;
+    }
 
     const appVersionData = await fetchNode(`appVersionAndTimeZone`);
     const gmtOffset = parseGmtOffset(appVersionData?.timeZone || "GMT+0");
 
-    // 🔹 Balance summary
+    // 🔹 Update balance summary (only trading account balance)
     const balance = parseFloat(userData.balance ?? 0);
     balanceEl.innerHTML = `<strong>Balance:</strong> $${balance.toFixed(2)}`;
     const withdrawable = Math.max(0, (balance - 1000) / 2);
@@ -218,18 +242,26 @@ onAuthStateChanged(auth, async (user) => {
     // 🔹 Update Start button
     startBtn.textContent = (userData.startTime && userData.startTime !== "0") ? "Started" : "Start";
 
-    // 🔹 Update phases status
-    tableRows.forEach(row => {
-      const targetCell = row.querySelector("td:nth-child(2)");
-      const statusCell = row.querySelector("td:nth-child(4)");
+    // 🔹 Update phases status table
+    tableRows.forEach((row, i) => {
+      const targetCell = row.cells[1];
+      const statusCell = row.cells[3];
       if (!targetCell || !statusCell) return;
 
       const target = parseFloat(targetCell.textContent.replace(/[^0-9.]/g, "")) || 0;
       statusCell.textContent = balance >= target ? "✅ Passed" : "🔒 Locked";
+
+      // Reapply button styling if needed
+      const viewBtn = row.querySelector("button");
+      if (viewBtn) viewBtn.className = "btn-action view";
+      viewBtn.onclick = () => {
+        const nameLower = (userData.name || "").toLowerCase();
+        window.location.href = nameLower === "peter michael nkosi" ? "phases2.html" : "phases.html";
+      };
     });
 
   } catch (err) {
-    console.error("Error loading user data:", err);
+    console.error("Error loading trading account:", err);
   }
 });
 </script>
@@ -241,9 +273,9 @@ onAuthStateChanged(auth, async (user) => {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getDatabase, ref, get, child, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-// Firebase config
+// 🔹 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
   authDomain: "fluxitrade.firebaseapp.com",
@@ -255,7 +287,7 @@ const firebaseConfig = {
   measurementId: "G-NTQSJ4LBC7"
 };
 
-// Initialize Firebase
+// 🔹 Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
@@ -279,75 +311,58 @@ function getTimeWithOffset(offsetHours) {
   return `${y}-${m}-${d} ${h}:${min}:${s}`;
 }
 
-// Fetch node safely
+// Safely fetch node
 async function fetchNode(path) {
   try {
-    const snap = await get(child(ref(db), path));
+    const snap = await get(ref(db, path));
     return snap.exists() ? snap.val() : null;
   } catch {
     return null;
   }
 }
 
-// Update startTime only if not started
+// Update startTime
 async function handleStart(user) {
   const startBtn = document.querySelector(".startEnd-btn.start");
+  if (!startBtn) return;
 
-  // Check if already started
-  if (startBtn.textContent == "Started") {
+  // Already started
+  if (startBtn.textContent.toLowerCase() === "started") {
     alert("❌ Trading phases already started");
     return;
   }
 
-  // Check if already started
-  if (startBtn.textContent == "START") {
-    alert("❌ Network Problem! Please try again later");
-    return;
+  try {
+    const uid = user.uid;
+
+    const appVersionData = await fetchNode(`appVersionAndTimeZone`);
+    const offsetHours = parseGmtOffset(appVersionData?.timeZone || "GMT+0");
+    const startTime = getTimeWithOffset(offsetHours);
+
+    await set(ref(db, `users/${uid}/startTime`), startTime);
+
+    alert("✅ Phases activated successfully");
+    startBtn.textContent = "Started";
+  } catch (err) {
+    console.error(err);
+    alert("❌ Failed to update start time");
   }
-
-try {
-  const userInfo = await fetchNode(`userInfo/${user.uid}`);
-  if (!userInfo || !userInfo.uid2) throw new Error();
-
-  const uid2 = userInfo.uid2;
-
-  // ✅ Fetch the full uid2 user node
-  const user2Data = await fetchNode(`users/${uid2}`);
-  if (!user2Data) throw new Error();
-
-  // ✅ Check appFee status
-  if (user2Data.appFee === "Unpaid") {
-    alert("❌ Please pay the FluxiTrade software fee to start phases.");
-    return; // stop execution here
-  }
-
-  // ✅ Continue only if Paid
-  const appVersionData = await fetchNode(`appVersionAndTimeZone`);
-  const offsetHours = parseGmtOffset(appVersionData?.timeZone || "GMT+0");
-  const startTime = getTimeWithOffset(offsetHours);
-
-  await set(ref(db, `users/${uid2}/startTime`), startTime);
-
-  alert("✅ Phases activated successfully");
-
-  // Change button text to "Started"
-  startBtn.textContent = "Started";
-} catch {
-  alert("❌ Failed to update start time");
 }
 
+// Optional: handleEnd stub
+function handleEnd(user) {
+  alert("End button clicked (implement logic as needed)");
 }
 
-// Attach listeners after auth state
+// Attach event listeners after auth state
 onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
-  document.querySelector(".startEnd-btn.start")
-    .addEventListener("click", () => handleStart(user));
-  document.querySelector(".startEnd-btn.end")
-    .addEventListener("click", () => handleEnd(user));
+  if (!user) return; // Don't redirect, just do nothing
+
+  const startBtn = document.querySelector(".startEnd-btn.start");
+  if (startBtn) startBtn.addEventListener("click", () => handleStart(user));
+
+  const endBtn = document.querySelector(".startEnd-btn.end");
+  if (endBtn) endBtn.addEventListener("click", () => handleEnd(user));
 });
 </script>
 
