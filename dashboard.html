@@ -264,10 +264,9 @@ onAuthStateChanged(auth, async (user) => {
 
 
 <!-- fetched requested funds status --------------------------------------------------------------------------------------------------------->
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 // Firebase config
@@ -289,56 +288,59 @@ const db = getDatabase(app);
 const menuLink = document.getElementById("requestFundsLink");
 const btn = document.getElementById("requestFundsBtn");
 
-// Unified handler function
-async function handleRequestFunds(e, user) {
+// Unified handler
+async function handleRequestFunds(e) {
   e.preventDefault();
 
+  const savedEmail = localStorage.getItem("savedEmail");
+  const savedPassword = localStorage.getItem("savedPassword");
+
+  if (!savedEmail || !savedPassword) {
+    alert("You are not logged in. Please log in first.");
+    return;
+  }
+
   try {
-    const snapshot = await get(ref(db, "usersRequestingFunds"));
-    let hasRequest = false;
+    // 🔹 Auto login using local storage
+    const userCredential = await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
+    const user = userCredential.user; // ALWAYS use this user object
+
+    console.log("User logged in:", user.uid);
+
+    // 🔹 Safely fetch only this user's request node
+    const userRef = ref(db, `usersRequestingFunds/${user.uid}`);
+    const snapshot = await get(userRef);
 
     if (snapshot.exists()) {
-      const requests = snapshot.val();
-      for (const key in requests) {
-        if (key === user.uid || requests[key]?.uid === user.uid) {
-          hasRequest = true;
-          break;
-        }
-      }
-    }
-
-    // Redirect based on request existence
-    if (hasRequest) {
+      console.log("Request exists:", snapshot.val());
       window.location.href = "status.html";
     } else {
+      console.log("No request found, redirecting to request page");
       window.location.href = "request_funds.html";
     }
 
   } catch (err) {
-    console.error("Error checking request status:", err);
-    alert("Could not check request status. Please try again.");
+    console.error("Error during login or fetching request:", err);
+    if (err.code && err.code.startsWith("auth/")) {
+      alert("Login failed. Please check your credentials.");
+    } else {
+      alert("Could not fetch request status. Please try again later.");
+    }
   }
 }
 
-// Attach click handlers only after auth state is known
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    console.log("User not logged in yet");
-    return;
-  }
-
-  menuLink.addEventListener("click", (e) => handleRequestFunds(e, user));
-  btn.addEventListener("click", (e) => handleRequestFunds(e, user));
-});
+menuLink.addEventListener("click", handleRequestFunds);
+btn.addEventListener("click", handleRequestFunds);
 </script>
+
 
 <!-- fetched trading account data --------------------------------------------------------------------------------------------------------->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getAuth, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
-// 🔹 Firebase config
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
   authDomain: "fluxitrade.firebaseapp.com",
@@ -350,111 +352,100 @@ const firebaseConfig = {
   measurementId: "G-NTQSJ4LBC7"
 };
 
-// 🔹 Init
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
 const tbody = document.querySelector(".account-table tbody");
+const userNameEl = document.getElementById("userName");
+const mainBalanceEl = document.getElementById("mainBalance");
 tbody.innerHTML = "";
+userNameEl.textContent = "Loading...";
+mainBalanceEl.textContent = "$0.00";
 
-// 🔹 Get local data
 const localData = JSON.parse(localStorage.getItem("savedUserInfo") || "{}");
 const accountNumber = localData.accountNumber || "";
 const password = localData.password || "";
+const originalUserName = localData.fullName || "Loading...";
+const originalMainBalance = localData.mainBalance || "0.00";
 
-// ==============================
-// 🔥 STEP 1: WAIT FOR AUTH STATE
-// ==============================
-onAuthStateChanged(auth, async (user) => {
+// Set profile name and main balance first
+userNameEl.textContent = originalUserName;
+mainBalanceEl.textContent = `$${originalMainBalance}`;
 
-  // ==============================
-  // 🔥 STEP 2: IF NOT LOGGED IN → TRY AUTO LOGIN
-  // ==============================
-  if (!user) {
-
-    if (!accountNumber || !password) {
-      tbody.innerHTML = "<tr><td colspan='5'>Please log in</td></tr>";
-      return; // ❌ NO REDIRECT
-    }
-
-    try {
-      const email = accountNumber + "@fluxitrade.com";
-      await signInWithEmailAndPassword(auth, email, password);
-      return; // wait for next auth state trigger
-    } catch (err) {
-      console.error("Auto login failed:", err);
-      tbody.innerHTML = "<tr><td colspan='5'>Login failed</td></tr>";
-      return; // ❌ NO REDIRECT
-    }
+async function fetchTradingAccount() {
+  if (!accountNumber || !password) {
+    tbody.innerHTML = "<tr><td colspan='5'>Please log in</td></tr>";
+    return;
   }
 
-  // ==============================
-  // 🔥 STEP 3: USER IS LOGGED IN
-  // ==============================
   try {
-    const uid2 = localData.uid2 || "";
+    // Sign out silently
+    if (auth.currentUser) await signOut(auth);
 
-    // ✅ FIX: DO NOT REDIRECT
-    if (!uid2 || uid2.trim() === "") {
-      tbody.innerHTML = "<tr><td colspan='5'>No trading account yet</td></tr>";
-      return;
-    }
+    // Login with trading account email
+    const email = accountNumber + "@fluxitrade.com";
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-    const snapshot = await get(ref(db, `users/${uid2}`));
-
+    // Fetch trading account data
+    const snapshot = await get(ref(db, `users/${user.uid}`));
     if (!snapshot.exists()) {
       tbody.innerHTML = "<tr><td colspan='5'>No trading account yet</td></tr>";
       return;
     }
 
-    const userData = snapshot.val();
+    const data = snapshot.val();
+    const passwordId = `password-${user.uid}`;
+    const toggleId = `toggle-${user.uid}`;
 
-    const row = `
+    // Update table only (do NOT change profile name)
+    tbody.innerHTML = `
       <tr>
+        <td>${data.accountNumber || ""}<br>ForexSecretWorld</td>
+        <td>$${data.balance ?? "0.00"}</td>
+        <td><button id="viewBtn" class="btn-action view">View</button></td>
         <td>
-          ${accountNumber}<br>
-          ForexSecretWorld
+          <input type="password" value="${data.password || ""}" id="${passwordId}" readonly>
+          <button id="${toggleId}" style="border:none; background:none; cursor:pointer;">👁️</button>
         </td>
-        <td>$${userData.balance || "0.00"}</td>
-        <td>
-          <button id="viewBtn" class="btn-action view">View</button>
-        </td>
-        <td>
-          <input type="password" value="${password}" id="password-${uid2}" readonly>
-          <button onclick="togglePassword('password-${uid2}')" style="border:none; background:none; cursor:pointer;">
-            👁️
-          </button>
-        </td>
-        <td>${userData.appFee || "0.00"}</td>
+        <td>${data.appFee || "Unpaid"}</td>
       </tr>
     `;
 
-    tbody.innerHTML = row;
+    // Toggle password visibility
+    document.getElementById(toggleId).onclick = () => {
+      const field = document.getElementById(passwordId);
+      field.type = field.type === "password" ? "text" : "password";
+    };
 
-    // 🔹 Button logic
-    const fullName = (userData.name || "").toLowerCase();
-    document.getElementById("viewBtn").onclick = () => {
-      if (fullName === "peter michael nkosi") {
-        window.location.href = "phases2.html";
-      } else {
-        window.location.href = "phases.html";
+    // View button logic - check deposit amount from users node
+    document.getElementById("viewBtn").onclick = async () => {
+      try {
+        const userNode = await get(ref(db, `users/${user.uid}`));
+        const deposit = parseFloat(userNode.val()?.deposit ?? 0);
+
+        if (deposit === 500) {
+          window.location.href = "phases.html";
+        } else {
+          window.location.href = "phases2.html";
+        }
+      } catch (err) {
+        console.error("Error checking deposit:", err);
+        alert("Failed to check deposit amount.");
       }
     };
 
   } catch (err) {
-    console.error(err);
-    tbody.innerHTML = "<tr><td colspan='5'>Error loading data</td></tr>";
+    console.error("Error fetching trading account:", err);
+    tbody.innerHTML = "<tr><td colspan='5'>Failed to load trading account</td></tr>";
   }
-});
+}
 
-// 🔹 Toggle password
-window.togglePassword = function(id) {
-  const field = document.getElementById(id);
-  field.type = field.type === "password" ? "text" : "password";
-};
+// Run on page load
+fetchTradingAccount();
 </script>
-
 
 
 <!-- Download app --------------------------------------------------------------------------------------------------------->
