@@ -81,8 +81,8 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, get, update, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getAuth, signOut, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -100,78 +100,117 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    alert("❌ Please log in first.");
-    return;
-  }
+// 🔹 Wait helper
+function waitForAuthState(expectedState) {
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if ((expectedState === "loggedOut" && !user) ||
+          (expectedState === "loggedIn" && user)) {
+        unsubscribe();
+        resolve(user);
+      }
+    });
+  });
+}
 
-  const form = document.getElementById("addBalanceForm");
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+// 🔹 Form
+const form = document.getElementById("addBalanceForm");
 
-    const email = form.querySelector('input[type="email"]').value.trim();
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  try {
+    const localData = JSON.parse(localStorage.getItem("savedUserInfo") || "{}");
+
+    const email = localData.email;
+    const password = localData.password;
+
+    const targetEmail = form.querySelector('input[type="email"]').value.trim();
     const amount = parseFloat(form.querySelector('input[type="number"]').value);
 
-    if (!email || isNaN(amount) || amount <= 0) {
-      alert("❌ Please enter a valid email and amount.");
+    if (!email || !password) {
+      alert("❌ User login data missing.");
       return;
     }
 
-    try {
-      // 1️⃣ Add amount to target user by email
-      const snapshot = await get(ref(db, "userInfo"));
-      if (!snapshot.exists()) {
-        alert("❌ No users found in the database.");
-        return;
-      }
-
-      const users = snapshot.val();
-      const targetUid = Object.keys(users).find(
-        uid => users[uid].email.trim().toLowerCase() === email.trim().toLowerCase()
-      );
-
-      if (!targetUid) {
-        alert("❌ User with this email not found.");
-        return;
-      }
-
-      const targetData = users[targetUid];
-      let targetBalance = parseFloat(targetData.mainBalance ?? 0);
-      if (isNaN(targetBalance)) targetBalance = 0;
-
-      const newTargetBalance = targetBalance + amount;
-
-      await update(ref(db, `userInfo/${targetUid}`), { mainBalance: newTargetBalance.toFixed(2) });
-
-      // 2️⃣ Subtract amount from logged-in user
-      const currentUserSnap = await get(ref(db, `userInfo/${user.uid}`));
-      if (!currentUserSnap.exists()) {
-        alert("❌ Your user data not found.");
-        return;
-      }
-
-      let currentBalance = parseFloat(currentUserSnap.val().mainBalance ?? 0);
-      if (isNaN(currentBalance)) currentBalance = 0;
-
-      if (currentBalance < amount) {
-        alert("❌ Insufficient funds to complete the transfer.");
-        // Optionally: roll back the previous addition if desired
-        await update(ref(db, `userInfo/${targetUid}`), { mainBalance: targetBalance.toFixed(2) });
-        return;
-      }
-
-      const newCurrentBalance = currentBalance - amount;
-      await update(ref(db, `userInfo/${user.uid}`), { mainBalance: newCurrentBalance.toFixed(2) });
-
-      alert(`✅ $${amount.toFixed(2)} transferred successfully!
-Your new balance: $${newCurrentBalance.toFixed(2)}`);
-      form.reset();
-
-    } catch (err) {
-      alert(`❌ Error transfering $${amount.toFixed(2)} please try again later.`);
+    if (!targetEmail || isNaN(amount) || amount <= 0) {
+      alert("❌ Enter valid email and amount.");
+      return;
     }
-  });
+
+    // =========================
+    // 🔹 STEP 1: LOGOUT
+    // =========================
+    await signOut(auth);
+    await waitForAuthState("loggedOut");
+
+    // =========================
+    // 🔹 STEP 2: LOGIN ORIGINAL USER
+    // =========================
+    await signInWithEmailAndPassword(auth, email, password);
+    const user = await waitForAuthState("loggedIn");
+
+    // =========================
+    // 🔹 STEP 3: FETCH USER BALANCE
+    // =========================
+    const currentSnap = await get(ref(db, `userInfo/${user.uid}`));
+    if (!currentSnap.exists()) {
+      alert("❌ Your account data not found.");
+      return;
+    }
+
+    let currentBalance = parseFloat(currentSnap.val().mainBalance ?? 0);
+    if (isNaN(currentBalance)) currentBalance = 0;
+
+    if (currentBalance < amount) {
+      alert("❌ Insufficient funds.");
+      return;
+    }
+
+    // =========================
+    // 🔹 STEP 4: SUBTRACT BALANCE
+    // =========================
+    const newBalance = (currentBalance - amount).toFixed(2);
+
+    await update(ref(db, `userInfo/${user.uid}`), {
+      mainBalance: newBalance
+    });
+
+    // =========================
+    // 🔹 STEP 5: SAVE TRANSFER REQUEST
+    // =========================
+    await set(ref(db, `transferedFunds/${user.uid}`), {
+      uid: user.uid,
+      name: localData.name || localData.fullName || "N/A",
+      senderEmail: email,
+      receiverEmail: targetEmail,
+      amount: amount,
+      status: "Pending",
+      createdAt: new Date().toISOString()
+    });
+
+    // =========================
+    // 🔹 STEP 6: UPDATE LOCAL + UI
+    // =========================
+    localData.mainBalance = newBalance;
+    localStorage.setItem("savedUserInfo", JSON.stringify(localData));
+
+    const balanceEl = document.getElementById("mainBalance");
+    if (balanceEl) {
+      balanceEl.textContent = `$${newBalance}`;
+    }
+
+    // =========================
+    // 🔹 SUCCESS
+    // =========================
+    alert(`✅ $${amount.toFixed(2)} transfer request to ${targetEmail} submitted successfully, please note that amount can take up to 24 hours to reflect on receiver account after a successful verification!`);
+
+    form.reset();
+
+  } catch (err) {
+    console.error("TRANSFER ERROR:", err);
+    alert("❌ Error processing request. Please try again.");
+  }
 });
 </script>
 
