@@ -138,6 +138,74 @@
   });
 </script>
 
+// 🔹 FORCE RE-LOGIN TO MAIN EMAIL --------------------------------------------------------------------------------------------------------------------->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getAuth, signOut, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCsdWCeIhvukSUM_8V3x7VneNtRaZf96YY",
+  authDomain: "fluxitrade.firebaseapp.com",
+  databaseURL: "https://fluxitrade-default-rtdb.firebaseio.com",
+  projectId: "fluxitrade",
+  storageBucket: "fluxitrade.firebasestorage.app",
+  messagingSenderId: "594575269059",
+  appId: "1:594575269059:web:c1faccf7a13689c9111676",
+  measurementId: "G-NTQSJ4LBC7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// 🔹 Wait helper
+function waitForAuthState(expectedState) {
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if ((expectedState === "loggedOut" && !user) ||
+          (expectedState === "loggedIn" && user)) {
+        unsubscribe();
+        resolve(user);
+      }
+    });
+  });
+}
+
+// =========================
+// 🔹 FORCE RE-LOGIN FLOW
+// =========================
+(async () => {
+  try {
+    const localData = JSON.parse(localStorage.getItem("savedUserInfo") || "{}");
+
+    const email = localData.email;
+    const password = localData.password;
+
+    if (!email || !password) {
+      alert("❌ Missing login data.");
+      return;
+    }
+
+    // 🔹 STEP 1: LOGOUT
+    await signOut(auth);
+    await waitForAuthState("loggedOut");
+
+    // 🔹 STEP 2: LOGIN WITH ORIGINAL EMAIL
+    await signInWithEmailAndPassword(auth, email, password);
+    await waitForAuthState("loggedIn");
+
+    console.log("✅ Logged in with original email");
+
+  } catch (err) {
+    console.error("Auth Error:", err);
+    alert("❌ Failed to login.");
+  }
+})();
+</script>  
+
 </body>
 </html>
 
