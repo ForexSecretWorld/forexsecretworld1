@@ -81,8 +81,8 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+import { getAuth, signOut, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getDatabase, ref, get, update, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 // Firebase config
 const firebaseConfig = {
@@ -96,62 +96,126 @@ const firebaseConfig = {
   measurementId: "G-NTQSJ4LBC7"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-// Helper: fetch node safely
-async function fetchNode(path) {
-  try {
-    const snap = await get(ref(db, path));
-    return snap.exists() ? snap.val() : null;
-  } catch (err) {
-    console.error("Error fetching node", path, err);
-    return null;
-  }
+// 🔹 Wait for auth state helper
+function waitForAuthState(expectedState) {
+  return new Promise((resolve) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if ((expectedState === "loggedOut" && !user) ||
+          (expectedState === "loggedIn" && user)) {
+        unsubscribe();
+        resolve(user);
+      }
+    });
+  });
 }
 
-// Handle Confirm button click
-onAuthStateChanged(auth, (user) => {
-  if (!user) return;
+// 🔹 Fetch helper
+async function fetchNode(path) {
+  const snap = await get(ref(db, path));
+  return snap.exists() ? snap.val() : null;
+}
 
-  const confirmBtn = document.querySelector(".payWithPaypal");
-  confirmBtn.addEventListener("click", async () => {
-    try {
-      const userData = await fetchNode(`userInfo/${user.uid}`);
-      if (!userData) {
-        alert("User data not found.");
-        return;
-      }
+// 🔹 Button
+const confirmBtn = document.querySelector(".payWithPaypal");
 
-      const mainBalance = parseFloat(userData.mainBalance ?? 0);
-      const uid2 = userData.uid2; // ✅ fetch uid2 from userInfo
+confirmBtn.addEventListener("click", async () => {
+  try {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Processing...";
 
-      if (mainBalance < 41) {
-        alert("❌ Insufficient funds.");
-        return;
-      }
+    const localData = JSON.parse(localStorage.getItem("savedUserInfo") || "{}");
 
-      // Deduct $41
-      const newBalance = mainBalance - 41;
-      await update(ref(db, `userInfo/${user.uid}`), {
-        mainBalance: newBalance.toFixed(2)
-      });
+    const email = localData.email;
+    const password = localData.password;
 
-      // Update appFee in users/{uid2}
-      await update(ref(db, `users/${uid2}`), {
-        appFee: "Paid"
-      });
-
-      alert("✅ $41 software fee paid successfully.");
-      window.location.href = "dashboard.html";
-
-    } catch (err) {
-      console.error(err);
-      alert("❌ Error processing payment.");
+    if (!email || !password) {
+      alert("User info missing!");
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = "Confirm Payment";
+      return;
     }
-  });
+
+    // =========================
+    // 🔹 STEP 1: LOGOUT
+    // =========================
+    await signOut(auth);
+    await waitForAuthState("loggedOut");
+
+    // =========================
+    // 🔹 STEP 2: LOGIN
+    // =========================
+    await signInWithEmailAndPassword(auth, email, password);
+    const user = await waitForAuthState("loggedIn");
+
+    // =========================
+    // 🔹 STEP 3: FETCH USER INFO
+    // =========================
+    const userInfo = await fetchNode(`userInfo/${user.uid}`);
+    if (!userInfo) {
+      alert("User info not found.");
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = "Confirm Payment";
+      return;
+    }
+
+    const mainBalance = parseFloat(userInfo.mainBalance ?? 0);
+
+    if (mainBalance < 41) {
+      alert("❌ Insufficient funds.");
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = "Confirm Payment";
+      return;
+    }
+
+    // =========================
+    // 🔹 STEP 4: UPDATE BALANCE
+    // =========================
+    const newBalance = (mainBalance - 41).toFixed(2);
+
+    await update(ref(db, `userInfo/${user.uid}`), {
+      mainBalance: newBalance
+    });
+
+    // 🔹 UPDATE LOCAL STORAGE
+    localData.mainBalance = newBalance;
+    localStorage.setItem("savedUserInfo", JSON.stringify(localData));
+
+    // 🔹 UPDATE UI
+    const mainBalanceEl = document.getElementById("mainBalance");
+    if (mainBalanceEl) {
+      mainBalanceEl.textContent = `$${newBalance}`;
+    }
+
+    // =========================
+    // 🔹 STEP 5: SAVE PAYMENT RECORD
+    // =========================
+    await set(ref(db, `paymentRecords/${user.uid}`), {
+      uid: user.uid,
+      name: localData.name || localData.fullName || "N/A",
+      email: email,
+      amount: 41,
+      status: "Pending Verification",
+      createdAt: new Date().toISOString()
+    });
+
+    // =========================
+    // 🔹 SUCCESS
+    // =========================
+    alert("✅ $41 sent successfully to Fluxitrade, payment verification in process, please note that full access to FluxiTrade can take up to 24 hours after successful verification.");
+
+    window.location.href = "dashboard.html";
+
+  } catch (err) {
+    console.error("FINAL ERROR:", err);
+    alert("❌ Error processing payment.");
+
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = "Confirm Payment";
+  }
 });
 </script>
 
