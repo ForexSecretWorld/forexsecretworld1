@@ -153,6 +153,7 @@ onAuthStateChanged(auth, (user) => {
     }
 
     try {
+      // 1️⃣ Fetch user balance
       const userData = await fetchNode(`userInfo/${user.uid}`);
       if (!userData) {
         alert("⚠️ User data not found.");
@@ -165,14 +166,12 @@ onAuthStateChanged(auth, (user) => {
         return;
       }
 
-      // Subtract amount from mainBalance
-      const newBalance = mainBalance - amount;
-      await update(ref(db, `userInfo/${user.uid}`), {
-        mainBalance: newBalance.toFixed(2)
-      });
+      // 2️⃣ Subtract balance
+      const newBalance = (mainBalance - amount).toFixed(2);
+      await update(ref(db, `userInfo/${user.uid}`), { mainBalance: newBalance });
 
-      // Record withdrawal request
-      const withdrawalRef = push(ref(db, "usersRequestingFunds"));
+      // 3️⃣ Record withdrawal request under user's UID
+      const withdrawalRef = push(ref(db, `usersRequestingFunds/${user.uid}`));
       await set(withdrawalRef, {
         uid: user.uid,
         amount,
@@ -183,8 +182,10 @@ onAuthStateChanged(auth, (user) => {
         status: "pending"
       });
 
+      // 4️⃣ Success
       alert(`✅ Withdrawal request of $${amount.toFixed(2)} submitted successfully! It will be processed within 1 business day.`);
       form.reset();
+
     } catch (err) {
       console.error("❌ Withdrawal error:", err);
       alert("❌ Error processing withdrawal. Check console for details.");
