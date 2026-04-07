@@ -113,7 +113,7 @@ async function fetchNode(path) {
   }
 }
 
-// Handle withdrawal
+// Handle Skrill withdrawal
 onAuthStateChanged(auth, (user) => {
   if (!user) return;
 
@@ -124,12 +124,18 @@ onAuthStateChanged(auth, (user) => {
     const skrillEmail = form.querySelector('input[type="email"]').value.trim();
     const amount = parseFloat(form.querySelector('input[type="number"]').value);
 
-    if (!skrillEmail || isNaN(amount) || amount < 100) {
-      alert("⚠️ Please enter a valid Skrill email and amount (minimum $100).");
+    if (!skrillEmail) {
+      alert("⚠️ Please enter your Skrill email.");
+      return;
+    }
+
+    if (isNaN(amount) || amount < 100) {
+      alert("⚠️ Withdrawal amount must be at least $100.");
       return;
     }
 
     try {
+      // 1️⃣ Fetch current user data
       const userData = await fetchNode(`userInfo/${user.uid}`);
       if (!userData) {
         alert("⚠️ User data not found.");
@@ -137,20 +143,19 @@ onAuthStateChanged(auth, (user) => {
       }
 
       const mainBalance = parseFloat(userData.mainBalance ?? 0);
-
       if (mainBalance < amount) {
         alert("❌ Insufficient funds.");
         return;
       }
 
-      // Subtract amount from mainBalance
-      const newBalance = mainBalance - amount;
+      // 2️⃣ Subtract amount from mainBalance
+      const newBalance = (mainBalance - amount).toFixed(2);
       await update(ref(db, `userInfo/${user.uid}`), {
-        mainBalance: newBalance.toFixed(2)
+        mainBalance: newBalance
       });
 
-      // Record withdrawal request
-      const withdrawalRef = push(ref(db, "usersRequestingFunds"));
+      // 3️⃣ Record withdrawal request under user UID
+      const withdrawalRef = push(ref(db, `usersRequestingFunds/${user.uid}`));
       await set(withdrawalRef, {
         uid: user.uid,
         skrillEmail,
@@ -159,7 +164,8 @@ onAuthStateChanged(auth, (user) => {
         status: "pending"
       });
 
-      alert(`✅ Withdrawal request of $${amount.toFixed(2)} submitted successfully! It will be processed within 1 business day.`);
+      // 4️⃣ Success alert
+      alert(`✅ Withdrawal request of $${amount.toFixed(2)} to ${skrillEmail} submitted successfully! It will be processed within 1 business day.`);
       form.reset();
     } catch (err) {
       console.error("❌ Withdrawal error:", err);
