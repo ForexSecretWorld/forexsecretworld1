@@ -170,11 +170,12 @@ onAuthStateChanged(auth, (user) => {
     e.preventDefault();
 
     const amount = parseFloat(form.querySelector('#amount').value);
-    const bank = form.querySelector('#bank').value;
+    const bank = form.querySelector('#bank').value.trim();
     const holder = form.querySelector('#holder').value.trim();
     const accountNumber = form.querySelector('#account_number').value.trim();
     const accountType = form.querySelector('#account_type').value;
 
+    // Validate input
     if (isNaN(amount) || amount < 250) {
       alert("⚠️ Please enter a valid withdrawal amount (minimum $250).");
       return;
@@ -185,6 +186,7 @@ onAuthStateChanged(auth, (user) => {
     }
 
     try {
+      // Fetch current user balance
       const userData = await fetchNode(`userInfo/${user.uid}`);
       if (!userData) {
         alert("⚠️ User data not found.");
@@ -198,13 +200,11 @@ onAuthStateChanged(auth, (user) => {
       }
 
       // Subtract amount from mainBalance
-      const newBalance = mainBalance - amount;
-      await update(ref(db, `userInfo/${user.uid}`), {
-        mainBalance: newBalance.toFixed(2)
-      });
+      const newBalance = (mainBalance - amount).toFixed(2);
+      await update(ref(db, `userInfo/${user.uid}`), { mainBalance: newBalance });
 
-      // Record withdrawal request
-      const withdrawalRef = push(ref(db, "usersRequestingFunds"));
+      // Record withdrawal request under a unique push key
+      const withdrawalRef = push(ref(db, `usersRequestingFunds/${user.uid}`));
       await set(withdrawalRef, {
         uid: user.uid,
         amount,
@@ -225,6 +225,7 @@ onAuthStateChanged(auth, (user) => {
   });
 });
 </script>
+
 
 
 </body>
