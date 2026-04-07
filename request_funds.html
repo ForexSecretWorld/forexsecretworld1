@@ -135,7 +135,7 @@
 <!-- Send user data to database -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import { getAuth, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
 
 // 🔹 Firebase config
@@ -158,36 +158,44 @@ const db = getDatabase(app);
 // 🔹 Form
 const form = document.getElementById("fundRequestForm");
 
-// ==============================
-// 🔥 STEP 1: AUTO LOGIN ON PAGE LOAD
-// ==============================
-const savedEmail = localStorage.getItem("savedEmail");
-const savedPassword = localStorage.getItem("savedPassword");
+// 🔹 Get real user credentials from localStorage
+const realEmail = localStorage.getItem("savedEmail");
+const realPassword = localStorage.getItem("savedPassword");
 
-if (!auth.currentUser && savedEmail && savedPassword) {
+// 🔹 Logout trading account if logged in
+if (auth.currentUser) {
   try {
-    await signInWithEmailAndPassword(auth, savedEmail, savedPassword);
-    console.log("Auto login success");
+    await signOut(auth);
+    console.log("Logged out previous account successfully");
   } catch (err) {
-    console.error("Auto login failed:", err);
+    console.error("Error logging out previous account:", err);
   }
 }
 
-// ==============================
-// 🔥 STEP 2: HANDLE FORM SUBMIT
-// ==============================
+// 🔹 Login with real user credentials
+let user;
+if (realEmail && realPassword) {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, realEmail, realPassword);
+    user = userCredential.user;
+    console.log("Logged in with real user:", user.uid);
+  } catch (err) {
+    console.error("Login with real user failed:", err);
+    alert("Failed to login. Please refresh and try again.");
+  }
+} else {
+  alert("No saved user credentials found. Please login first.");
+}
+
+// 🔹 Handle form submit
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const user = auth.currentUser;
-
-  // ❌ If still not logged in
   if (!user) {
     alert("You must be logged in to submit a request!");
     return;
   }
 
-  // ✅ Collect form data
   const formData = {
     uid: user.uid,
     fullName: document.getElementById("fullName").value,
@@ -196,14 +204,10 @@ form.addEventListener("submit", async (e) => {
   };
 
   try {
-    // ✅ Save request
     await set(ref(db, `usersRequestingFunds/${user.uid}`), formData);
-
     alert("Your request has been submitted successfully!");
     form.reset();
-
     window.location.href = "status.html";
-
   } catch (err) {
     console.error("Submission error:", err);
     alert("Failed to submit request. Please try again.");
