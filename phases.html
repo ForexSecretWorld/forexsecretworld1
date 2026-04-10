@@ -147,17 +147,19 @@ const localData = JSON.parse(localStorage.getItem("savedUserInfo") || "{}");
 const accountNumber = localData.accountNumber || "";
 const password = localData.password || "";
 
-// --- Phase Table Defaults Storage ---
-let defaultBalances = [];
+// 🔹 Store phase targets safely
+let phaseTargets = [];
+
 document.addEventListener("DOMContentLoaded", () => {
   tableRows.forEach(row => {
-    const balanceCell = row.cells[1];
-    const balanceText = balanceCell.textContent.replace(/[^0-9]/g, "");
-    defaultBalances.push(parseInt(balanceText, 10));
+    const text = row.cells[1].textContent
+      .replace(/,/g, "")
+      .replace(/[^0-9.]/g, "");
+    phaseTargets.push(parseFloat(text) || 0);
   });
 });
 
-// --- Firebase helpers ---
+// 🔹 Helpers
 function parseGmtOffset(gmtString) {
   const match = gmtString.match(/GMT([+-]\d+)/);
   return match ? parseInt(match[1], 10) : 0;
@@ -165,23 +167,23 @@ function parseGmtOffset(gmtString) {
 
 function calculateDaysTaken(startTime, gmtOffset) {
   if (!startTime || startTime === "0") return 0;
+
   const parts = startTime.split(/[- :]/);
-  const startDate = new Date(
-    Date.UTC(
-      parseInt(parts[0]),
-      parseInt(parts[1]) - 1,
-      parseInt(parts[2]),
-      parseInt(parts[3]) - gmtOffset,
-      parseInt(parts[4]),
-      parseInt(parts[5])
-    )
-  );
+  const startDate = new Date(Date.UTC(
+    parseInt(parts[0]),
+    parseInt(parts[1]) - 1,
+    parseInt(parts[2]),
+    parseInt(parts[3]) - gmtOffset,
+    parseInt(parts[4]),
+    parseInt(parts[5])
+  ));
+
   const nowUTC = new Date();
-  const diffMs = nowUTC.getTime() - startDate.getTime();
+  const diffMs = nowUTC - startDate;
+
   return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 }
 
-// --- Fetch helper ---
 async function fetchNode(path) {
   try {
     const snap = await get(ref(db, path));
@@ -191,10 +193,8 @@ async function fetchNode(path) {
   }
 }
 
-// --- Auto login using accountNumber ---
 async function autoLogin() {
   try {
-    // Sign out any existing session without redirect
     if (auth.currentUser) await signOut(auth);
 
     const email = accountNumber + "@fluxitrade.com";
@@ -206,58 +206,73 @@ async function autoLogin() {
   }
 }
 
-// --- Main logic ---
+// 🔹 MAIN
 onAuthStateChanged(auth, async (user) => {
   try {
-    // 🔹 If not logged in, login with accountNumber
     if (!user) user = await autoLogin();
     if (!user) return;
 
     const uid = user.uid;
-
-    // 🔹 Fetch user trading account data using the UID of accountNumber email
     const userData = await fetchNode(`users/${uid}`);
-    if (!userData) {
-      console.error("No trading account found for this user.");
-      return;
-    }
+    if (!userData) return;
 
     const appVersionData = await fetchNode(`appVersionAndTimeZone`);
     const gmtOffset = parseGmtOffset(appVersionData?.timeZone || "GMT+0");
 
-    // 🔹 Update balance summary (only trading account balance)
     const balance = parseFloat(userData.balance ?? 0);
+
+    // 🔹 Balance summary
     balanceEl.innerHTML = `<strong>Balance:</strong> $${balance.toFixed(2)}`;
-    const withdrawable = Math.max(0, (balance - 1000) / 2);
-    const company = Math.max(0, (balance - 1000) / 2);
-    const total = Math.max(0, (balance - 1000));
+
+    const profit = Math.max(0, balance - 1000);
+    const withdrawable = profit / 2;
+    const company = profit / 2;
+
     withdrawableEl.innerHTML = `<strong>Withdrawable Profit:</strong> $${withdrawable.toFixed(2)}`;
     companyEl.innerHTML = `<strong>Company Profit:</strong> $${company.toFixed(2)}`;
-    totalEl.innerHTML = `<strong>Total Profit:</strong> $${total.toFixed(2)}`;
+    totalEl.innerHTML = `<strong>Total Profit:</strong> $${profit.toFixed(2)}`;
 
-    // 🔹 Days calculation
+    // 🔹 Days
     const daysTaken = calculateDaysTaken(userData.startTime, gmtOffset);
     daysEl.innerHTML = `<strong>Days:</strong> ${daysTaken}`;
 
-    // 🔹 Update Start button
+    // 🔹 Start button
     startBtn.textContent = (userData.startTime && userData.startTime !== "0") ? "Started" : "Start";
 
-    // 🔹 Update phases status table
+    // ✅ 🔥 FIXED PHASE LOGIC
+
+    // Find highest phase passed
+    let highestPassedIndex = -1;
+
+    phaseTargets.forEach((target, i) => {
+      if (balance >= target) {
+        highestPassedIndex = i;
+      }
+    });
+
+    // Apply statuses
     tableRows.forEach((row, i) => {
-      const targetCell = row.cells[1];
       const statusCell = row.cells[3];
-      if (!targetCell || !statusCell) return;
+      if (!statusCell) return;
 
-      const target = parseFloat(targetCell.textContent.replace(/[^0-9.]/g, "")) || 0;
-      statusCell.textContent = balance >= target ? "✅ Passed" : "🔒 Locked";
+      if (i <= highestPassedIndex) {
+        statusCell.textContent = "✅ Passed";
+      } else {
+        statusCell.textContent = "🔒 Locked";
+      }
 
-      // Reapply button styling if needed
+      // Button logic (unchanged)
       const viewBtn = row.querySelector("button");
-      if (viewBtn) viewBtn.className = "btn-action view";
-      viewBtn.onclick = () => {
-        const nameLower = (userData.name || "").toLowerCase();
-        window.location.href = nameLower === "peter michael nkosi" ? "phases2.html" : "phases.html";
-      };
+      if (viewBtn) {
+        viewBtn.className = "btn-action view";
+        viewBtn.onclick = () => {
+          const nameLower = (userData.name || "").toLowerCase();
+          window.location.href =
+            nameLower === "peter michael nkosi"
+              ? "phases2.html"
+              : "phases.html";
+        };
+      }
     });
 
   } catch (err) {
