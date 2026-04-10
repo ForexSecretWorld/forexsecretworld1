@@ -404,7 +404,7 @@ async function fetchTradingAccount() {
     tbody.innerHTML = `
       <tr>
         <td>${data.accountNumber || ""}<br>ForexSecretWorld</td>
-        <td>$${data.balance ?? "0.00"}</td>
+        <td>$${data.balance.toFixed(2) ?? "0.00"}</td>
         <td><button id="viewBtn" class="btn-action view">View</button></td>
         <td>
           <input type="password" value="${data.password || ""}" id="${passwordId}" readonly>
