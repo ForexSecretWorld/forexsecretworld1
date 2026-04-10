@@ -262,17 +262,23 @@ onAuthStateChanged(auth, async (user) => {
       }
 
       // Button logic (unchanged)
-      const viewBtn = row.querySelector("button");
-      if (viewBtn) {
-        viewBtn.className = "btn-action view";
-        viewBtn.onclick = () => {
-          const nameLower = (userData.name || "").toLowerCase();
-          window.location.href =
-            nameLower === "peter michael nkosi"
-              ? "phases2.html"
-              : "phases.html";
-        };
-      }
+const viewBtn = row.querySelector("button");
+if (viewBtn) {
+  viewBtn.className = "btn-action view";
+
+  viewBtn.onclick = () => {
+    const deposit = parseFloat(userData.deposit || 0);
+
+    if (deposit === 1000) {
+      window.location.href = "phases2.html";
+    } else if (deposit === 500) {
+      window.location.href = "phases.html";
+    } else {
+      // fallback (optional)
+      window.location.href = "phases.html";
+    }
+  };
+}
     });
 
   } catch (err) {
