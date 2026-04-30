@@ -224,7 +224,7 @@ onAuthStateChanged(auth, async (user) => {
     // 🔹 Balance summary
     balanceEl.innerHTML = `<strong>Balance:</strong> $${balance.toFixed(2)}`;
 
-    const profit = Math.max(0, balance - 1000);
+    const profit = Math.max(0, balance - 500);
     const withdrawable = profit / 2;
     const company = profit / 2;
 
