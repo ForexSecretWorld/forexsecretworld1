@@ -165,19 +165,34 @@ function parseGmtOffset(gmtString) {
 
 function calculateDaysTaken(startTime, gmtOffset) {
   if (!startTime || startTime === "0") return 0;
-  const parts = startTime.split(/[- :]/);
-  const startDate = new Date(
-    Date.UTC(
-      parseInt(parts[0]),
-      parseInt(parts[1]) - 1,
-      parseInt(parts[2]),
-      parseInt(parts[3]) - gmtOffset,
-      parseInt(parts[4]),
-      parseInt(parts[5])
-    )
-  );
-  const nowUTC = new Date();
-  const diffMs = nowUTC.getTime() - startDate.getTime();
+
+  // Try native parsing first (handles ISO formats)
+  let startDate = new Date(startTime);
+
+  // If invalid, fallback to manual parsing
+  if (isNaN(startDate.getTime())) {
+    const parts = startTime.split(/[- :]/).map(Number);
+
+    if (parts.length < 6 || parts.some(isNaN)) {
+      console.error("Invalid startTime format:", startTime);
+      return 0;
+    }
+
+    startDate = new Date(Date.UTC(
+      parts[0],
+      parts[1] - 1,
+      parts[2],
+      parts[3] - gmtOffset,
+      parts[4],
+      parts[5]
+    ));
+  }
+
+  if (isNaN(startDate.getTime())) return 0;
+
+  const now = new Date();
+  const diffMs = now - startDate;
+
   return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 }
 
