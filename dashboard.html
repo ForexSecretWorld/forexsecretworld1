@@ -468,7 +468,7 @@ fetchTradingAccount();
 
 <!-- Download ALTREDO app --------------------------------------------------------------------------------------------------------->
 <script>
-  // 1. App download logic
+  // 1. App download handler
   function downloadAltredoApp() {
     const link = document.createElement('a');
     link.href = 'altredoXO.apk';  
@@ -478,24 +478,64 @@ fetchTradingAccount();
     document.body.removeChild(link);
   }
 
-  // 2. UID Visibility Logic
-  function checkUserAccess() {
-    // REPLACE THIS: Fetch your actual logged-in user's UID from your backend, 
-    // Firebase auth, sessionStorage, or local storage.
-    const loggedInUID = "nu4nFA20kkhrX050XD8VE0l81nt2"; // Example placeholder
+  // 2. Dynamic Access Control Check
+  function enforceDownloadAccess() {
+    let currentUID = null;
 
-    // Allowed UIDs
-    const allowedUIDs = ["nu4nFA20kkhrX050XD8VE0l81nt2", "457RDSSDGDSGDS"];
-
-    // Check if the current user is allowed
-    if (allowedUIDs.includes(loggedInUID)) {
-      document.getElementById('downloadBtn').style.display = 'block';
+    // --- RECOVERY STRATEGIES FOR DYNAMIC AUTH SYSTEMS ---
+    // Strategy A: Check common client-side auth stores
+    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
+      currentUID = firebase.auth().currentUser.uid;
+    } else if (window.localStorage.getItem('uid')) {
+      currentUID = window.localStorage.getItem('uid');
+    } else if (window.sessionStorage.getItem('uid')) {
+      currentUID = window.sessionStorage.getItem('uid');
     }
+    
+    // Strategy B: Check if your backend injected a global user object
+    else if (window.user && window.user.uid) {
+      currentUID = window.user.uid;
+    } else if (window.currentUser && window.currentUser.id) {
+      currentUID = window.currentUser.id;
+    }
+
+    // Explicitly allowed IDs (Cleaned of any potential whitespace issues)
+    const whitelist = ["ERYRRSETETTYI7668", "457RDSSDGDSGDS"];
+    const targetBtn = document.getElementById('downloadBtn');
+
+    if (currentUID) {
+      const sanitizedUID = String(currentUID).trim();
+      
+      if (whitelist.includes(sanitizedUID)) {
+        targetBtn.style.display = 'inline-block';
+        return true; // Successfully matched and displayed
+      }
+    }
+    
+    // Fallback if UID doesn't match or isn't loaded yet
+    targetBtn.style.display = 'none';
+    return false;
   }
 
-  // Run the check as soon as the DOM is fully loaded
-  document.addEventListener("DOMContentLoaded", checkUserAccess);
-</script> 
+  // 3. Automation Layer: Watches for data changes to defeat timing bugs
+  document.addEventListener("DOMContentLoaded", () => {
+    // Run immediate check in case data is already present
+    enforceDownloadAccess();
+
+    const nameTarget = document.getElementById('userName');
+    if (nameTarget) {
+      const observer = new MutationObserver(() => {
+        // When 'Loading...' changes to the actual user name, trigger evaluation
+        if (nameTarget.innerText !== "Loading...") {
+          const success = enforceDownloadAccess();
+          if (success) observer.disconnect(); // Stop watching once access is granted
+        }
+      });
+
+      observer.observe(nameTarget, { childList: true, characterData: true, subtree: true });
+    }
+  });
+</script>
 
 
 
