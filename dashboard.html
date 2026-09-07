@@ -467,7 +467,26 @@ fetchTradingAccount();
 </script>
 
 <!-- Download ALTREDO app --------------------------------------------------------------------------------------------------------->
+<script>
+  function downloadAltredoApp() {
+    // Prompt the user to enter their unique key
+    const userKey = prompt("Please enter your unique key to start the download:");
 
+    // Check if the entered key matches "15782"
+    if (userKey === "15782") {
+      // Create a temporary hidden link
+      const link = document.createElement('a');
+      link.href = 'altredoXO.apk';  // path to your APK file
+      link.download = 'altredoXO.apk'; // file name for saving
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else if (userKey !== null) {
+      // Alert the user if the key is wrong (and they didn't hit 'Cancel')
+      alert("Invalid key. Download cancelled.");
+    }
+  } 
+</script>
 
 
 
