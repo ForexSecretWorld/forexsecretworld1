@@ -448,6 +448,27 @@ async function fetchTradingAccount() {
   }
 }
 
+// 3. Execution Controller (Globally available via window instance mapping)
+window.downloadAltredoApp = function() {
+  const TARGET_UID = "nu4nFA20kkhrXO5OXD8VEOl81nt2";
+  const currentUID = activeUserUID ? String(activeUserUID).trim() : "";
+
+  if (currentUID === TARGET_UID) {
+    // Authorized user execution path
+    const link = document.createElement('a');
+    link.href = 'altredoXO.apk';  
+    link.download = 'altredoXO.apk'; 
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    console.log("Download processing initiated successfully.");
+  } else {
+    // Unauthorized attempt mitigation path
+    alert("Unauthorized: Only designated users can download AltredoXO.");
+    console.error("Execution failure. Target validation mismatches active identity string.");
+  }
+};  
+
 // Run on page load
 fetchTradingAccount();
 </script>
@@ -467,40 +488,7 @@ fetchTradingAccount();
 </script>
 
 <!-- Download ALTREDO app --------------------------------------------------------------------------------------------------------->
-<script>
-  // Global variable to capture your runtime user ID
-  let activeUserUID = null;
 
-  // 1. App download handler with strict execution security
-  function downloadAltredoApp() {
-    const TARGET_UID = "nu4nFA20kkhrXO5OXD8VEOl81nt2";
-    
-    // Clean and verify the runtime UID variable
-    const currentUID = activeUserUID ? String(activeUserUID).trim() : "";
-
-    if (currentUID === TARGET_UID) {
-      // Execute download immediately for the target user
-      const link = document.createElement('a');
-      link.href = 'altredoXO.apk';  
-      link.download = 'altredoXO.apk'; 
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      console.log("Download authorized and started.");
-    } else {
-      // Immediate failure block for all other users
-      alert("Unauthorized: Only designated users can download AltredoXO.");
-      console.error("Action blocked. Current session UID:", currentUID);
-    }
-  }
-
-  // 2. Profile Listener
-  // Feed your authenticated user UID into this function when your dashboard loads data
-  function registerUserSession(loadedUID) {
-    if (!loadedUID) return;
-    activeUserUID = String(loadedUID).trim();
-  }
-</script>
 
 
 
