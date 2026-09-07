@@ -478,63 +478,29 @@ fetchTradingAccount();
     document.body.removeChild(link);
   }
 
-  // 2. Dynamic Access Control Check
-  function enforceDownloadAccess() {
-    let currentUID = null;
+  // 2. Direct Authorization Function
+  // Call this function from your main login/fetch script and pass the user's UID string
+  function authorizeDownload(userUID) {
+    const allowedUIDs = ["nu4nFA20kkhrXO5OXD8VEOl81nt2", "457RDSSDGDSGDS"];
+    const downloadButton = document.getElementById('downloadBtn');
 
-    // --- RECOVERY STRATEGIES FOR DYNAMIC AUTH SYSTEMS ---
-    // Strategy A: Check common client-side auth stores
-    if (typeof firebase !== 'undefined' && firebase.auth().currentUser) {
-      currentUID = firebase.auth().currentUser.uid;
-    } else if (window.localStorage.getItem('uid')) {
-      currentUID = window.localStorage.getItem('uid');
-    } else if (window.sessionStorage.getItem('uid')) {
-      currentUID = window.sessionStorage.getItem('uid');
-    }
-    
-    // Strategy B: Check if your backend injected a global user object
-    else if (window.user && window.user.uid) {
-      currentUID = window.user.uid;
-    } else if (window.currentUser && window.currentUser.id) {
-      currentUID = window.currentUser.id;
+    if (!userUID) {
+      console.warn("AuthorizeDownload called without a valid UID.");
+      downloadButton.style.display = 'none';
+      return;
     }
 
-    // Explicitly allowed IDs (Cleaned of any potential whitespace issues)
-    const whitelist = ["nu4nFA20kkhrXO5OXD8VEOl81nt2", "457RDSSDGDSGDS"];
-    const targetBtn = document.getElementById('downloadBtn');
+    // Clean up whitespace and force string type comparison
+    const cleanUID = String(userUID).trim();
 
-    if (currentUID) {
-      const sanitizedUID = String(currentUID).trim();
-      
-      if (whitelist.includes(sanitizedUID)) {
-        targetBtn.style.display = 'inline-block';
-        return true; // Successfully matched and displayed
-      }
+    if (allowedUIDs.includes(cleanUID)) {
+      downloadButton.style.display = 'inline-block';
+      console.log("Access granted for UID:", cleanUID);
+    } else {
+      downloadButton.style.display = 'none';
+      console.log("Access denied for UID:", cleanUID);
     }
-    
-    // Fallback if UID doesn't match or isn't loaded yet
-    targetBtn.style.display = 'none';
-    return false;
   }
-
-  // 3. Automation Layer: Watches for data changes to defeat timing bugs
-  document.addEventListener("DOMContentLoaded", () => {
-    // Run immediate check in case data is already present
-    enforceDownloadAccess();
-
-    const nameTarget = document.getElementById('userName');
-    if (nameTarget) {
-      const observer = new MutationObserver(() => {
-        // When 'Loading...' changes to the actual user name, trigger evaluation
-        if (nameTarget.innerText !== "Loading...") {
-          const success = enforceDownloadAccess();
-          if (success) observer.disconnect(); // Stop watching once access is granted
-        }
-      });
-
-      observer.observe(nameTarget, { childList: true, characterData: true, subtree: true });
-    }
-  });
 </script>
 
 
