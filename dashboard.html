@@ -402,21 +402,6 @@ async function fetchTradingAccount() {
     }
 
     const data = snapshot.val();
-
-    const downloadButton = document.getElementById('downloadBtn');
-    
-    // --- CRITICAL STEP: Extract account number and evaluate layout visibility condition ---
-    
-      activeAccountNumber = String(data.accountNumber).trim();
-      console.log("Account tracker active for account number:", activeAccountNumber);
-
-      // Condition to reveal the button ONLY for account 159912
-      if (activeAccountNumber === "159912") {
-        downloadButton.style.display = 'inline-block';
-      } else {
-        downloadButton.style.display = 'none';
-      }
-    
     const passwordId = `password-${user.uid}`;
     const toggleId = `toggle-${user.uid}`;
 
@@ -461,28 +446,7 @@ async function fetchTradingAccount() {
     console.error("Error fetching trading account:", err);
     tbody.innerHTML = "<tr><td colspan='5'>Failed to load trading account</td></tr>";
   }
-}
-
-// 3. Execution Controller (Globally available via window instance mapping)
-window.downloadAltredoApp = function() {
-  const TARGET_UID = "nu4nFA20kkhrXO5OXD8VEOl81nt2";
-  const currentUID = activeUserUID ? String(activeUserUID).trim() : "";
-
-  if (currentUID === TARGET_UID) {
-    // Authorized user execution path
-    const link = document.createElement('a');
-    link.href = 'altredoXO.apk';  
-    link.download = 'altredoXO.apk'; 
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    console.log("Download processing initiated successfully.");
-  } else {
-    // Unauthorized attempt mitigation path
-    alert("Unauthorized: Only designated users can download AltredoXO.");
-    console.error("Execution failure. Target validation mismatches active identity string.");
-  }
-};  
+} 
 
 // Run on page load
 fetchTradingAccount();
