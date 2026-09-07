@@ -468,37 +468,47 @@ fetchTradingAccount();
 
 <!-- Download ALTREDO app --------------------------------------------------------------------------------------------------------->
 <script>
-  // 1. App download handler
+  // Global variable to hold the active user's UID once your app loads it
+  let activeUserUID = null;
+
+  // 1. App download handler with hardcoded security check
   function downloadAltredoApp() {
-    const link = document.createElement('a');
-    link.href = 'altredoXO.apk';  
-    link.download = 'altredoXO.apk'; 
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const TARGET_UID = "nu4nFA20kkhrXO5OXD8VEOl81nt2";
+    
+    // Clean and verify the runtime UID variable
+    const currentUID = activeUserUID ? String(activeUserUID).trim() : "";
+
+    if (currentUID === TARGET_UID) {
+      // Execute download immediately
+      const link = document.createElement('a');
+      link.href = 'altredoXO.apk';  
+      link.download = 'altredoXO.apk'; 
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      console.log("Download authorized and started.");
+    } else {
+      // Fail immediately for unauthorized users
+      alert("Error: You do not have permission to download this application.");
+      console.error("Download blocked. Unauthorized UID:", currentUID);
+    }
   }
 
-  // 2. Direct Authorization Function
-  // Call this function from your main login/fetch script and pass the user's UID string
-  function authorizeDownload(userUID) {
-    const allowedUIDs = ["nu4nFA20kkhrXO5OXD8VEOl81nt2", "457RDSSDGDSGDS"];
+  // 2. Authorization Core
+  // Call this function and pass your user's UID as soon as your auth layer responds
+  function authorizeUserSession(loadedUID) {
+    if (!loadedUID) return;
+
+    // Save it to the global variable so the click handler can read it safely
+    activeUserUID = String(loadedUID).trim();
+    const TARGET_UID = "nu4nFA20kkhrXO5OXD8VEOl81nt2";
     const downloadButton = document.getElementById('downloadBtn');
 
-    if (!userUID) {
-      console.warn("AuthorizeDownload called without a valid UID.");
-      downloadButton.style.display = 'none';
-      return;
-    }
-
-    // Clean up whitespace and force string type comparison
-    const cleanUID = String(userUID).trim();
-
-    if (allowedUIDs.includes(cleanUID)) {
+    // Show or hide button visually based on strict match
+    if (activeUserUID === TARGET_UID) {
       downloadButton.style.display = 'inline-block';
-      console.log("Access granted for UID:", cleanUID);
     } else {
       downloadButton.style.display = 'none';
-      console.log("Access denied for UID:", cleanUID);
     }
   }
 </script>
