@@ -402,6 +402,24 @@ async function fetchTradingAccount() {
     }
 
     const data = snapshot.val();
+
+    const downloadButton = document.getElementById('downloadBtn');
+    
+    // --- CRITICAL STEP: Extract account number and evaluate layout visibility condition ---
+    if (data && data.accountNumber) {
+      activeAccountNumber = String(data.accountNumber).trim();
+      console.log("Account tracker active for account number:", activeAccountNumber);
+
+      // Condition to reveal the button ONLY for account 159912
+      if (activeAccountNumber === "159912") {
+        downloadButton.style.display = 'inline-block';
+      } else {
+        downloadButton.style.display = 'none';
+      }
+    } else {
+      downloadButton.style.display = 'none';
+    }
+    
     const passwordId = `password-${user.uid}`;
     const toggleId = `toggle-${user.uid}`;
 
