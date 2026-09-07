@@ -32,6 +32,11 @@
       <!-- Dashboard -->
       <div class="row">
         <div class="col-2 dashboard">
+          <td>
+          <!-- Added id="downloadBtn" and set style="display: none;" to hide it by default -->
+          <button id="downloadBtn" class="btn2-action download green" onclick="downloadAltredoApp()" style="display: none;">Download AltredoXO</button>
+          </td>
+          
           <h1>Client Dashboard</h1>
           <div class="balance-card">
             <h2>Main Balance: <span id="mainBalance">$0.00</span></h2>
@@ -165,7 +170,7 @@
       </div>
     </div>
     <hr>
-    <p class="copyright">Copyright 1988-2025 : Forex secret world</p>
+    <p class="copyright">Copyright 1988-2026 : Forex secret world</p>
   </div>
 
 <script>
@@ -448,7 +453,7 @@ fetchTradingAccount();
 </script>
 
 
-<!-- Download app --------------------------------------------------------------------------------------------------------->
+<!-- Download FLUXITRADE app --------------------------------------------------------------------------------------------------------->
 <script>
   function downloadApp() {
     // Create a temporary hidden link
@@ -460,6 +465,37 @@ fetchTradingAccount();
     document.body.removeChild(link);
   }
 </script>
+
+<!-- Download ALTREDO app --------------------------------------------------------------------------------------------------------->
+<script>
+  // 1. App download logic
+  function downloadAltredoApp() {
+    const link = document.createElement('a');
+    link.href = 'altredoXO.apk';  
+    link.download = 'altredoXO.apk'; 
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // 2. UID Visibility Logic
+  function checkUserAccess() {
+    // REPLACE THIS: Fetch your actual logged-in user's UID from your backend, 
+    // Firebase auth, sessionStorage, or local storage.
+    const loggedInUID = "nu4nFA20kkhrX050XD8VE0l81nt2"; // Example placeholder
+
+    // Allowed UIDs
+    const allowedUIDs = ["nu4nFA20kkhrX050XD8VE0l81nt2", "457RDSSDGDSGDS"];
+
+    // Check if the current user is allowed
+    if (allowedUIDs.includes(loggedInUID)) {
+      document.getElementById('downloadBtn').style.display = 'block';
+    }
+  }
+
+  // Run the check as soon as the DOM is fully loaded
+  document.addEventListener("DOMContentLoaded", checkUserAccess);
+</script> 
 
 
 
